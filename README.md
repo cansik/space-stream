@@ -1,4 +1,4 @@
-# spout-rgbd-example
+# Spout RGB-D Example
 An example which streams RGB-D images over spout. Due to the spout dependency this currently only works on Windows.
 
 ### Installation
