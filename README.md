@@ -1,11 +1,11 @@
 # Spout RGB-D Example
-An example which streams RGB-D images over spout. Due to the spout dependency this currently only works on Windows.
+An example which streams RGB-D images over spout with visiongraph. Due to the spout dependency this currently only works on Windows.
 
 ### Installation
-It is recommended to use `Python 3.8` or higher and should run on any OS. First create a new [virtualenv](https://docs.python.org/3/library/venv.html) and activate it. After that install all dependencies:
+It is recommended to use `Python 3.8` or higher and should run on any OS. First create a new [virtualenv](https://docs.python.org/3/library/venv.html) and activate it. 
+After that install all dependencies:
 
 ```bash
-# installation
 pip install -r requirements.txt
 ```
 
