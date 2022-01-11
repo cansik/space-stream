@@ -1,4 +1,5 @@
 import argparse
+import logging
 import threading
 
 import cv2
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if issubclass(args.input, RealSenseInput):
-        # set realsense options
+        logging.info("setting realsense options")
         args.depth = True
         args.color_scheme = RealSenseColorScheme.WhiteToBlack
         args.rs_filter = [rs.spatial_filter, rs.temporal_filter, rs.hole_filling_filter]

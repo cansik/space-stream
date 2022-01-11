@@ -17,7 +17,7 @@ pip install -r requirements-windows.txt
 Simply run the [demo.py](demo.py) with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) and check the result there.
 
 ```
-python demo.py --realsense
+python demo.py --input realsense
 ```
 
 #### Help
