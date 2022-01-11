@@ -28,8 +28,7 @@ class SyphonClient(FrameBufferSharingClient):
         self.ctx.publish_frame_texture(self.texture, syphonpy.MakeRect(0, 0, w, h), syphonpy.MakeSize(w, h), False)
 
     def release(self):
-        # self.ctx.releaseSender()
-        pass
+        self.ctx.stop()
 
     def _numpy_to_texture(self, image: np.ndarray, w: int, h: int):
         glBindTexture(GL_TEXTURE_2D, self.texture)
