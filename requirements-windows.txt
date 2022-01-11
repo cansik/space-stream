@@ -2,5 +2,7 @@
 --find-links https://github.com/cansik/data-storage/releases/tag/packages
 
 visiongraph[realsense]==0.1.9
-SpoutGL
 pyopengl
+
+# os-specific
+SpoutGL
