@@ -32,11 +32,11 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from fbs.FrameBufferSharingClient import FrameBufferSharingClient
+from fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 
-class SyphonClient(FrameBufferSharingClient):
-    def __init__(self, name: str = "SyphonClient"):
+class SyphonServer(FrameBufferSharingServer):
+    def __init__(self, name: str = "SyphonServer"):
         super().__init__(name)
 
         self.ctx: Optional[syphonpy.SyphonServer] = None

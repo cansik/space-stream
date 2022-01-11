@@ -10,12 +10,12 @@ from visiongraph.input import RealSenseInput, add_input_step_choices
 from visiongraph.input.BaseDepthInput import BaseDepthInput
 from visiongraph.model.types.RealSenseColorScheme import RealSenseColorScheme
 
-from fbs.FrameBufferSharingClient import FrameBufferSharingClient
+from fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 
 class DemoPipeline(Pipeline):
 
-    def __init__(self, input: RealSenseInput, fbs_client: FrameBufferSharingClient,
+    def __init__(self, input: RealSenseInput, fbs_client: FrameBufferSharingServer,
                  multi_threaded: bool = False, deamon: bool = False):
         super().__init__(multi_threaded, deamon)
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         args.rs_filter = [rs.spatial_filter, rs.temporal_filter, rs.hole_filling_filter]
 
     # create frame buffer sharing client
-    fbs_client = FrameBufferSharingClient.create("RGBDStream")
+    fbs_client = FrameBufferSharingServer.create("RGBDStream")
 
     # run pipeline
     pipeline = DemoPipeline(args.input(), fbs_client)

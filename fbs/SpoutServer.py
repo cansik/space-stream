@@ -6,11 +6,11 @@ import SpoutGL
 import numpy as np
 from OpenGL import GL
 
-from fbs.FrameBufferSharingClient import FrameBufferSharingClient
+from fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 
-class SpoutClient(FrameBufferSharingClient):
-    def __init__(self, name: str = "SpoutClient"):
+class SpoutServer(FrameBufferSharingServer):
+    def __init__(self, name: str = "SpoutServer"):
         super().__init__(name)
         self.ctx: Optional[SpoutGL.SpoutSender] = None
 
