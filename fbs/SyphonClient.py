@@ -1,5 +1,9 @@
+import logging
 from argparse import Namespace, ArgumentParser
-from typing import Optional
+from typing import Optional, Any
+
+import cv2
+import glfw
 
 
 def monkeypatch_ctypes():
@@ -34,12 +38,19 @@ from fbs.FrameBufferSharingClient import FrameBufferSharingClient
 class SyphonClient(FrameBufferSharingClient):
     def __init__(self, name: str = "SyphonClient"):
         super().__init__(name)
+
         self.ctx: Optional[syphonpy.SyphonServer] = None
         self.texture: Optional[glGenTextures] = None
 
+        self._window: Optional[Any] = None
+
     def setup(self):
         # setup spout
+        self._create_gl_context()
+
         self.ctx = syphonpy.SyphonServer(self.name)
+        if self.ctx.error_state():
+            logging.error("error in syphonserver")
         self.texture = glGenTextures(1)
 
     def send(self, frame: np.array):
@@ -50,8 +61,12 @@ class SyphonClient(FrameBufferSharingClient):
 
     def release(self):
         self.ctx.stop()
+        self._release_gl_context()
 
     def _numpy_to_texture(self, image: np.ndarray, w: int, h: int):
+        # flip image
+        image = cv2.flip(image, 0)
+
         glBindTexture(GL_TEXTURE_2D, self.texture)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -59,6 +74,28 @@ class SyphonClient(FrameBufferSharingClient):
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
 
         gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, w, h, GL_RGB, GL_UNSIGNED_BYTE, image)
+
+    def _create_gl_context(self):
+        # Initialize the library
+        if not glfw.init():
+            logging.error("GLFW: could not init glfw")
+            return
+        # Set window hint NOT visible
+        glfw.window_hint(glfw.VISIBLE, False)
+
+        # Create a windowed mode window and its OpenGL context
+        self._window = glfw.create_window(100, 100, "hidden window", None, None)
+        if not self._window:
+            logging.error("GLFW: window error")
+            glfw.terminate()
+            return
+
+        glfw.make_context_current(self._window)
+
+    def _release_gl_context(self):
+        if self._window is not None:
+            glfw.destroy_window(self._window)
+            glfw.terminate()
 
     def configure(self, args: Namespace):
         pass

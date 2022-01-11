@@ -1,8 +1,10 @@
 --find-links https://github.com/cansik/pyrealsense2-macosx/releases
 --find-links https://github.com/cansik/data-storage/releases/tag/packages
 
+pyrealsense2==2.49.0
 visiongraph[realsense]==0.1.9
 pyopengl
 
 # os-specific
 syphonpy
+glfw
