@@ -20,31 +20,40 @@ Simply run the [demo.py](demo.py) with the following command to run a capturing 
 python demo.py --input realsense
 ```
 
-By default the depthmap is encoded by the realsense colorizer. It is possible to change the behaviour to use a specific encoding method. Here is a list of all available:
+#### Depth Encoding
+By default the depthmap is encoded by the realsense colorizer. It is possible to change the behaviour to use a specific encoding method. Be aware that some functions have an impact on performance because of the power calculation. Here is a list of all available:
 
 ```
-Colorizer, Linear_8bit, Quad_8bit, Cubic_8bit, Quart_8bit, Quint_8bit
+Colorizer, Linear, Quad, Cubic, Quart, Quint
 ```
 
-And it is possible to set the specific encoding by using the `--depth-encoding` parameter or by using the number keys on the viewer (0 = Colorizer, 1 = Linear_8bit, ..).
+And it is possible to set the specific encoding by using the `--depth-encoding` parameter or by using the number keys on the viewer (0 = Colorizer, 1 = Linear, ..).
 
 ```
-python demo.py --input realsense --depth-encoding Quad_8bit
+python demo.py --input realsense --depth-encoding Quad
 ```
 
+#### Bit Depth
+By default the bit depth is 8bit, but it is also possible to change it to a 16 bit encoding where two color channels (blue, green) are used. Green for the most significant bits and blue for the least significant bits (little-endian).
+To change the bit-depth use the parameter `--bit-depth` or the keyboard key `b` in the viewer:
+
+```
+python demo.py --input realsense --depth-encoding Quad --bit-depth 16
+```
+
+#### Distance Range
 To define the min and max distance to encode, use the `--min-distance` and `--max-distance` parameter.
 
 #### Help
 
 ```
-usage: demo.py [-h]
-               [--depth-encoding Colorizer,Linear_8bit,Quad_8bit,Cubic_8bit,Quart_8bit,Quint_8bit]
+usage: demo.py [-h] [--depth-encoding Colorizer,Linear,Quad,Cubic,Quart,Quint]
                [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
-               [--input video-capture,realsense] [--input-size width height]
-               [--input-fps INPUT_FPS] [--input-rotate 90,-90,180]
-               [--input-flip h,v] [--raw-input] [--channel CHANNEL]
-               [--input-skip INPUT_SKIP] [-ir] [--exposure EXPOSURE]
-               [--gain GAIN] [--rs-serial RS_SERIAL]
+               [--bit-depth {8,16}] [--input video-capture,realsense]
+               [--input-size width height] [--input-fps INPUT_FPS]
+               [--input-rotate 90,-90,180] [--input-flip h,v] [--raw-input]
+               [--channel CHANNEL] [--input-skip INPUT_SKIP] [-ir]
+               [--exposure EXPOSURE] [--gain GAIN] [--rs-serial RS_SERIAL]
                [--rs-play-bag RS_PLAY_BAG] [--rs-record-bag RS_RECORD_BAG]
                [--disable-emitter] [--depth]
                [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
@@ -56,13 +65,14 @@ RGB-D framebuffer sharing demo for visiongraph
 
 optional arguments:
   -h, --help            show this help message and exit
-  --depth-encoding Colorizer,Linear_8bit,Quad_8bit,Cubic_8bit,Quart_8bit,Quint_8bit
+  --depth-encoding Colorizer,Linear,Quad,Cubic,Quart,Quint
                         Method how the depth map will be encoded, default:
                         Colorizer.
   --min-distance MIN_DISTANCE
                         Min distance to perceive by the camera.
   --max-distance MAX_DISTANCE
                         Max distance to perceive by the camera.
+  --bit-depth {8,16}    Encoding output bit depth (default: 8).
 
 input provider:
   --input video-capture,realsense

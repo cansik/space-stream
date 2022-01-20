@@ -16,11 +16,11 @@ from fbs.FrameBufferSharingServer import FrameBufferSharingServer
 class DepthEncoding(Enum):
     Colorizer = 1,
 
-    Linear_8bit = 2,
-    Quad_8bit = 3,
-    Cubic_8bit = 4,
-    Quart_8bit = 5,
-    Quint_8bit = 6,
+    Linear = 2,
+    Quad = 3,
+    Cubic = 4,
+    Quart = 5,
+    Quint = 6,
 
 
 def linear_interpolate(x):
@@ -39,13 +39,13 @@ def ease_out_cubic(x):
 
 
 def ease_out_quart(x):
-    # ease_in_cubic: x => x * x * x * x
+    # ease_in_quart: x => x * x * x * x
     x = x - 1
     return 1 - np.power(x, 4)
 
 
 def ease_out_quint(x):
-    # ease_in_cubic: x => x * x * x * x
+    # ease_in_quint: x => x * x * x * x * x
     x = x - 1
     return 1 + np.power(x, 5)
 
@@ -53,15 +53,18 @@ def ease_out_quint(x):
 class DemoPipeline(vg.BaseGraph):
 
     def __init__(self, input: vg.BaseInput, fbs_client: FrameBufferSharingServer,
-                 encoding: DepthEncoding = DepthEncoding.Colorizer, min_distance: float = 0, max_distance: float = 6):
+                 encoding: DepthEncoding = DepthEncoding.Colorizer,
+                 min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8):
         super().__init__(False, False, handle_signals=True)
 
         self.input = input
         self.fbs_client = fbs_client
+        self.fps_tracer = vg.FPSTracer()
 
         self.encoding = encoding
         self.min_distance = min_distance
         self.max_distance = max_distance
+        self.bit_depth = bit_depth
 
         self.add_nodes(self.input, self.fbs_client)
 
@@ -85,16 +88,16 @@ class DemoPipeline(vg.BaseGraph):
 
             if self.encoding == DepthEncoding.Colorizer:
                 depth_map = self.input.depth_map
-            elif self.encoding == DepthEncoding.Linear_8bit:
-                depth_map = self.encode_depth_information(self.input, linear_interpolate)
-            elif self.encoding == DepthEncoding.Quad_8bit:
-                depth_map = self.encode_depth_information(self.input, ease_out_quad)
-            elif self.encoding == DepthEncoding.Cubic_8bit:
-                depth_map = self.encode_depth_information(self.input, ease_out_cubic)
-            elif self.encoding == DepthEncoding.Quart_8bit:
-                depth_map = self.encode_depth_information(self.input, ease_out_quart)
-            elif self.encoding == DepthEncoding.Quint_8bit:
-                depth_map = self.encode_depth_information(self.input, ease_out_quint)
+            elif self.encoding == DepthEncoding.Linear:
+                depth_map = self.encode_depth_information(self.input, linear_interpolate, self.bit_depth)
+            elif self.encoding == DepthEncoding.Quad:
+                depth_map = self.encode_depth_information(self.input, ease_out_quad, self.bit_depth)
+            elif self.encoding == DepthEncoding.Cubic:
+                depth_map = self.encode_depth_information(self.input, ease_out_cubic, self.bit_depth)
+            elif self.encoding == DepthEncoding.Quart:
+                depth_map = self.encode_depth_information(self.input, ease_out_quart, self.bit_depth)
+            elif self.encoding == DepthEncoding.Quint:
+                depth_map = self.encode_depth_information(self.input, ease_out_quint, self.bit_depth)
             else:
                 raise Exception("No encoding method is set!")
 
@@ -112,8 +115,13 @@ class DemoPipeline(vg.BaseGraph):
         bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
         self.fbs_client.send(bgrd)
 
+        self.fps_tracer.update()
+
         # imshow does only work in main thread!
         if threading.current_thread() is threading.main_thread():
+            cv2.putText(rgbd, "FPS: %.0f" % self.fps_tracer.smooth_fps,
+                        (7, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
+
             cv2.imshow("RGB-D FrameBuffer Sharing Demo", rgbd)
             key_code = cv2.waitKey(15) & 0xFF
             if key_code == 27:
@@ -121,7 +129,17 @@ class DemoPipeline(vg.BaseGraph):
 
             key = chr(key_code).lower()
             if key == "h":
-                print("Use numbers to toggle through encodings (example: Colorizer = 0, Linear = 1, ...)")
+                print("Help:")
+                print("\tUse numbers to toggle through encodings (example: Colorizer = 0, Linear = 1, ...)")
+                print("\tUse 'b' to change the bit-depth")
+                print("\tUse 'esq' to close the application")
+
+            if key == "b":
+                if self.bit_depth == 8:
+                    self.bit_depth = 16
+                else:
+                    self.bit_depth = 8
+                print(f"Switched bit-depth to {self.bit_depth} bits.")
 
             if key.isnumeric():
                 index = int(key)
@@ -133,7 +151,7 @@ class DemoPipeline(vg.BaseGraph):
 
     def encode_depth_information(self, device: vg.RealSenseInput,
                                  interpolation: Callable,
-                                 bit_depth: int = 8) -> np.ndarray:
+                                 bit_depth: int) -> np.ndarray:
         # prepare information
         depth_unit = device.depth_frame.get_units()
         min_value = round(self.min_distance / depth_unit)
@@ -151,10 +169,21 @@ class DemoPipeline(vg.BaseGraph):
         depth = 1.0 - depth  # flip
 
         # convert to new bit range
-        depth = (depth * total_unique_values).astype(np.uint8)
+        depth = (depth * total_unique_values).astype(np.uint16)
 
-        # map to RGB image
-        return cv2.cvtColor(depth, cv2.COLOR_GRAY2RGB)
+        # map to RGB image (8 or 16 bit)
+        if bit_depth == 8:
+            return cv2.cvtColor(depth.astype(np.uint8), cv2.COLOR_GRAY2RGB)
+
+        # bit depth 16 bit
+        out = np.expand_dims(depth, axis=2)
+
+        r_channel = out * 0
+        g_channel = (out >> 8) & 0xff
+        b_channel = out & 0xff
+
+        out = np.concatenate((b_channel, g_channel, r_channel), axis=2)
+        return out.astype(np.uint8)
 
     @staticmethod
     def add_params(parser: argparse.ArgumentParser):
@@ -166,7 +195,9 @@ if __name__ == "__main__":
     vg.add_enum_choice_argument(parser, DepthEncoding, "--depth-encoding",
                                 help="Method how the depth map will be encoded")
     parser.add_argument("--min-distance", type=float, default=0, help="Min distance to perceive by the camera.")
-    parser.add_argument("--max-distance", type=float, default=10, help="Max distance to perceive by the camera.")
+    parser.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
+    parser.add_argument("--bit-depth", type=int, default=8, choices=[8, 16],
+                        help="Encoding output bit depth (default: 8).")
 
     input_group = parser.add_argument_group("input provider")
     add_input_step_choices(input_group)
@@ -187,6 +218,7 @@ if __name__ == "__main__":
     fbs_client = FrameBufferSharingServer.create("RGBDStream")
 
     # run pipeline
-    pipeline = DemoPipeline(args.input(), fbs_client, args.depth_encoding)
+    pipeline = DemoPipeline(args.input(), fbs_client, args.depth_encoding,
+                            args.min_distance, args.max_distance, args.bit_depth)
     pipeline.configure(args)
     pipeline.open()
