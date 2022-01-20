@@ -2,7 +2,7 @@
 --find-links https://github.com/cansik/data-storage/releases/tag/packages
 
 pyrealsense2==2.49.0
-visiongraph[realsense]==0.1.9
+visiongraph[realsense]==0.1.12
 pyopengl
 
 # os-specific

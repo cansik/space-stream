@@ -5,17 +5,15 @@ import threading
 import cv2
 import numpy as np
 import pyrealsense2 as rs
-from visiongraph.Pipeline import Pipeline
-from visiongraph.input import RealSenseInput, add_input_step_choices
-from visiongraph.input.BaseDepthInput import BaseDepthInput
-from visiongraph.model.types.RealSenseColorScheme import RealSenseColorScheme
+import visiongraph as vg
+from visiongraph.input import add_input_step_choices
 
 from fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 
-class DemoPipeline(Pipeline):
+class DemoPipeline(vg.BaseGraph):
 
-    def __init__(self, input: RealSenseInput, fbs_client: FrameBufferSharingServer,
+    def __init__(self, input: vg.RealSenseInput, fbs_client: FrameBufferSharingServer,
                  multi_threaded: bool = False, deamon: bool = False):
         super().__init__(multi_threaded, deamon)
 
@@ -30,7 +28,7 @@ class DemoPipeline(Pipeline):
         if frame is None:
             return
 
-        if isinstance(self.input, BaseDepthInput):
+        if isinstance(self.input, vg.BaseDepthInput):
             # read depth map and create rgb-d
             depth_map = self.input.depth_map
 
@@ -65,10 +63,10 @@ if __name__ == "__main__":
     add_input_step_choices(input_group)
     args = parser.parse_args()
 
-    if issubclass(args.input, RealSenseInput):
+    if issubclass(args.input, vg.RealSenseInput):
         logging.info("setting realsense options")
         args.depth = True
-        args.color_scheme = RealSenseColorScheme.WhiteToBlack
+        args.color_scheme = vg.RealSenseColorScheme.WhiteToBlack
         args.rs_filter = [rs.spatial_filter, rs.temporal_filter, rs.hole_filling_filter]
 
     # create frame buffer sharing client

@@ -1,16 +1,20 @@
 from abc import ABC, abstractmethod
 from sys import platform
+
 import numpy as np
-from visiongraph.PipelineNode import PipelineNode
+import visiongraph as vg
 
 
-class FrameBufferSharingServer(PipelineNode, ABC):
+class FrameBufferSharingServer(vg.GraphNode, ABC):
     def __init__(self, name: str):
         self.name = name
 
     @abstractmethod
     def send(self, frame: np.array):
         pass
+
+    def process(self, data: np.ndarray) -> None:
+        self.send(data)
 
     @staticmethod
     def create(name: str):
