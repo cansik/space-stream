@@ -115,4 +115,4 @@ input provider:
 ```
 
 ### About
-Copyright (c) 2021 Florian Bruggisser
+Copyright (c) 2022 Florian Bruggisser
