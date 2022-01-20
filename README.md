@@ -20,23 +20,49 @@ Simply run the [demo.py](demo.py) with the following command to run a capturing 
 python demo.py --input realsense
 ```
 
+By default the depthmap is encoded by the realsense colorizer. It is possible to change the behaviour to use a specific encoding method. Here is a list of all available:
+
+```
+Colorizer, Linear_8bit, Quad_8bit, Cubic_8bit, Quart_8bit, Quint_8bit
+```
+
+And it is possible to set the specific encoding by using the `--depth-encoding` parameter or by using the number keys on the viewer (0 = Colorizer, 1 = Linear_8bit, ..).
+
+```
+python demo.py --input realsense --depth-encoding Quad_8bit
+```
+
+To define the min and max distance to encode, use the `--min-distance` and `--max-distance` parameter.
+
 #### Help
 
 ```
-usage: demo.py [-h] [--input video-capture,realsense]
-               [--input-size width height] [--input-fps INPUT_FPS]
-               [--input-rotate 90,-90,180] [--input-flip h,v] [--raw-input]
-               [--channel CHANNEL] [--input-skip INPUT_SKIP] [-ir]
-               [--exposure EXPOSURE] [--gain GAIN] [--rs-serial RS_SERIAL]
+usage: demo.py [-h]
+               [--depth-encoding Colorizer,Linear_8bit,Quad_8bit,Cubic_8bit,Quart_8bit,Quint_8bit]
+               [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
+               [--input video-capture,realsense] [--input-size width height]
+               [--input-fps INPUT_FPS] [--input-rotate 90,-90,180]
+               [--input-flip h,v] [--raw-input] [--channel CHANNEL]
+               [--input-skip INPUT_SKIP] [-ir] [--exposure EXPOSURE]
+               [--gain GAIN] [--rs-serial RS_SERIAL]
+               [--rs-play-bag RS_PLAY_BAG] [--rs-record-bag RS_RECORD_BAG]
                [--disable-emitter] [--depth]
                [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
                [--depth-as-input]
                [--color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
+               [--no-filter]
 
-Spout demo for visiongraph
+RGB-D framebuffer sharing demo for visiongraph
 
 optional arguments:
   -h, --help            show this help message and exit
+  --depth-encoding Colorizer,Linear_8bit,Quad_8bit,Cubic_8bit,Quart_8bit,Quint_8bit
+                        Method how the depth map will be encoded, default:
+                        Colorizer.
+  --min-distance MIN_DISTANCE
+                        Min distance to perceive by the camera.
+  --max-distance MAX_DISTANCE
+                        Max distance to perceive by the camera.
 
 input provider:
   --input video-capture,realsense
@@ -61,6 +87,10 @@ input provider:
                         exposure).
   --rs-serial RS_SERIAL
                         RealSense serial number to choose specific device.
+  --rs-play-bag RS_PLAY_BAG
+                        Path to a pre-recorded bag file for playback.
+  --rs-record-bag RS_RECORD_BAG
+                        Path to a bag file to store the current recording.
   --disable-emitter     Disable RealSense IR emitter.
   --depth               Enable RealSense depth stream.
   --rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]
@@ -68,6 +98,7 @@ input provider:
   --depth-as-input      Use colored depth stream as input stream.
   --color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern
                         Color scheme for depth map, default: WhiteToBlack.
+  --no-filter           Disable realsense image filter.
 ```
 
 ### About
