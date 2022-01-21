@@ -28,26 +28,8 @@ def linear_interpolate(x):
 
 
 def ease_out_quad(x):
-    # ease_in_quad: x => x * x
+    # decode = sqrt(x)
     return x * (2 - x)
-
-
-def ease_out_cubic(x):
-    # ease_in_cubic: x => x * x * x
-    x = x - 1
-    return np.power(x, 3) + 1
-
-
-def ease_out_quart(x):
-    # ease_in_quart: x => x * x * x * x
-    x = x - 1
-    return 1 - np.power(x, 4)
-
-
-def ease_out_quint(x):
-    # ease_in_quint: x => x * x * x * x * x
-    x = x - 1
-    return 1 + np.power(x, 5)
 
 
 class DemoPipeline(vg.BaseGraph):
@@ -92,12 +74,6 @@ class DemoPipeline(vg.BaseGraph):
                 depth_map = self.encode_depth_information(self.input, linear_interpolate, self.bit_depth)
             elif self.encoding == DepthEncoding.Quad:
                 depth_map = self.encode_depth_information(self.input, ease_out_quad, self.bit_depth)
-            elif self.encoding == DepthEncoding.Cubic:
-                depth_map = self.encode_depth_information(self.input, ease_out_cubic, self.bit_depth)
-            elif self.encoding == DepthEncoding.Quart:
-                depth_map = self.encode_depth_information(self.input, ease_out_quart, self.bit_depth)
-            elif self.encoding == DepthEncoding.Quint:
-                depth_map = self.encode_depth_information(self.input, ease_out_quint, self.bit_depth)
             else:
                 raise Exception("No encoding method is set!")
 

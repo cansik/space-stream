@@ -27,8 +27,10 @@ python demo.py --input realsense
 By default the depthmap is encoded by the realsense colorizer. It is possible to change the behaviour to use a specific encoding method. Be aware that some functions have an impact on performance because of the power calculation. Here is a list of all available:
 
 ```
-Colorizer, Linear, Quad, Cubic, Quart, Quint
+Colorizer, Linear, Quad
 ```
+
+To convert the `Quad` encoding back it is possible to use `1-sqrt(x)`.
 
 And it is possible to set the specific encoding by using the `--depth-encoding` parameter or by using the number keys on the viewer (0 = Colorizer, 1 = Linear, ..).
 
