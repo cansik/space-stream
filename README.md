@@ -52,7 +52,7 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 #### Help
 
 ```
-usage: demo.py [-h] [--depth-encoding Colorizer,Linear,Quad,Cubic,Quart,Quint]
+usage: demo.py [-h] [--depth-encoding Colorizer,Linear,Quad]
                [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
                [--bit-depth {8,16}] [--input video-capture,realsense]
                [--input-size width height] [--input-fps INPUT_FPS]
@@ -70,7 +70,7 @@ RGB-D framebuffer sharing demo for visiongraph
 
 optional arguments:
   -h, --help            show this help message and exit
-  --depth-encoding Colorizer,Linear,Quad,Cubic,Quart,Quint
+  --depth-encoding Colorizer,Linear,Quad
                         Method how the depth map will be encoded, default:
                         Colorizer.
   --min-distance MIN_DISTANCE
