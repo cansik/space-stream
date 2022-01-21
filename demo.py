@@ -29,6 +29,7 @@ def linear_interpolate(x):
 
 def ease_out_quad(x):
     # ease_in_quad: x => x * x
+    # inverse: 1 - sqrt(1-x})
     return x * (2 - x)
 
 
@@ -165,15 +166,24 @@ class DemoPipeline(vg.BaseGraph):
         depth = np.clip(depth, min_value, max_value)
         depth = (depth - min_value) / d_value  # normalize
 
+        depth_l = linear_interpolate(depth)
+        depth_l = 1.0 - depth_l  # flip
+
         depth = interpolation(depth)
         depth = 1.0 - depth  # flip
 
         # convert to new bit range
+        depth_l = (depth_l * total_unique_values).astype(np.uint16)
         depth = (depth * total_unique_values).astype(np.uint16)
 
         # map to RGB image (8 or 16 bit)
         if bit_depth == 8:
-            return cv2.cvtColor(depth.astype(np.uint8), cv2.COLOR_GRAY2RGB)
+            r_channel = np.expand_dims(depth_l, axis=2)
+            g_channel = np.expand_dims(depth, axis=2)
+            b_channel = np.expand_dims(depth_l, axis=2)
+
+            out = np.concatenate((b_channel, g_channel, r_channel), axis=2)
+            return out.astype(np.uint8)
 
         # bit depth 16 bit
         out = np.expand_dims(depth, axis=2)
