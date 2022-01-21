@@ -15,12 +15,8 @@ from fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 class DepthEncoding(Enum):
     Colorizer = 1,
-
     Linear = 2,
     Quad = 3,
-    Cubic = 4,
-    Quart = 5,
-    Quint = 6,
 
 
 def linear_interpolate(x):
