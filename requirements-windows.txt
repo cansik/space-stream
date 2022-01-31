@@ -1,8 +1,0 @@
---find-links https://github.com/cansik/pyrealsense2-macosx/releases
---find-links https://github.com/cansik/data-storage/releases/tag/packages
-
-visiongraph[realsense]==0.1.12
-pyopengl
-
-# os-specific
-SpoutGL

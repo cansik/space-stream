@@ -2,9 +2,12 @@
 --find-links https://github.com/cansik/data-storage/releases/tag/packages
 
 pyrealsense2==2.49.0
-visiongraph[realsense]==0.1.12
+visiongraph[realsense]==0.1.15
 pyopengl
 
-# os-specific
-syphonpy
-glfw
+# macos
+syphonpy; platform_system == "Darwin"
+glfw; platform_system == "Darwin"
+
+# windows
+SpoutGL; platform_system == "Windows"

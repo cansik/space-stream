@@ -9,11 +9,7 @@ It is recommended to use `Python 3.8` or higher and should run on any OS. First 
 After that install all dependencies:
 
 ```bash
-# on MacOS use this:
-pip install -r requirements-macos.txt
-
-# on Windows use this:
-pip install -r requirements-windows.txt
+pip install -r requirements.txt
 ```
 
 ### Usage
