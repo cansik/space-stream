@@ -19,6 +19,12 @@ Simply run the [demo.py](demo.py) with the following command to run a capturing 
 python demo.py --input realsense
 ```
 
+To use the Azure Kinect use the `azure` input type:
+
+```
+python demo.py --input azure
+```
+
 #### Depth Encoding
 By default the depthmap is encoded by the realsense colorizer. It is possible to change the behaviour to use a specific encoding method. Be aware that some functions have an impact on performance because of the power calculation. Here is a list of all available:
 

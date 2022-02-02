@@ -39,6 +39,8 @@ class DemoPipeline(vg.BaseGraph):
         self.fbs_client = fbs_client
         self.fps_tracer = vg.FPSTracer()
 
+        self.depth_units: float = 0.001
+
         self.encoding = encoding
         self.min_distance = min_distance
         self.max_distance = max_distance
@@ -61,9 +63,11 @@ class DemoPipeline(vg.BaseGraph):
         if frame is None:
             return
 
-        if isinstance(self.input, vg.RealSenseInput):
-            # read depth map and create rgb-d
+        if isinstance(self.input, vg.BaseDepthInput):
+            if isinstance(self.input, vg.RealSenseInput):
+                self.depth_units = self.input.depth_frame.get_units()
 
+            # read depth map and create rgb-d
             if self.encoding == DepthEncoding.Colorizer:
                 depth_map = self.input.depth_map
             elif self.encoding == DepthEncoding.Linear:
@@ -121,18 +125,17 @@ class DemoPipeline(vg.BaseGraph):
                     self.encoding = encodings[index]
                     print(f"Switch to {self.encoding} ({index})")
 
-    def encode_depth_information(self, device: vg.RealSenseInput,
+    def encode_depth_information(self, device: vg.BaseDepthInput,
                                  interpolation: Callable,
                                  bit_depth: int) -> np.ndarray:
         # prepare information
-        depth_unit = device.depth_frame.get_units()
-        min_value = round(self.min_distance / depth_unit)
-        max_value = round(self.max_distance / depth_unit)
+        min_value = round(self.min_distance / self.depth_units)
+        max_value = round(self.max_distance / self.depth_units)
         d_value = max_value - min_value
         total_unique_values = pow(2, bit_depth) - 1
 
         # read depth, clip, normalize and map
-        depth = np.asarray(device.depth_frame.data, dtype=np.float)
+        depth = device.depth_buffer
         depth[depth == 0] = max_value  # set 0 (no-data points) to max value
         depth = np.clip(depth, min_value, max_value)
         depth = (depth - min_value) / d_value  # normalize
@@ -178,6 +181,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if issubclass(args.input, vg.BaseDepthInput):
+        args.depth = True
+
     if issubclass(args.input, vg.RealSenseInput):
         logging.info("setting realsense options")
         args.depth = True
@@ -185,6 +191,9 @@ if __name__ == "__main__":
 
         if not args.no_filter:
             args.rs_filter = [rs.spatial_filter, rs.temporal_filter, rs.hole_filling_filter]
+
+    if issubclass(args.input, vg.AzureKinectInput):
+        args.k4a_align = True
 
     # create frame buffer sharing client
     fbs_client = FrameBufferSharingServer.create("RGBDStream")
