@@ -46,6 +46,8 @@ class DemoPipeline(vg.BaseGraph):
         self.max_distance = max_distance
         self.bit_depth = bit_depth
 
+        self.show_preview = True
+
         self.add_nodes(self.input, self.fbs_client)
 
     def _init(self):
@@ -180,6 +182,11 @@ class DemoPipeline(vg.BaseGraph):
     def add_params(parser: argparse.ArgumentParser):
         pass
 
+    def configure(self, args: argparse.Namespace):
+        super().configure(args)
+
+        self.show_preview = not args.no_preview
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RGB-D framebuffer sharing demo for visiongraph")
@@ -196,6 +203,7 @@ if __name__ == "__main__":
     add_input_step_choices(input_group)
 
     input_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
+    input_group.add_argument("--no-preview", action="store_true", help="Disable preview to speed.")
 
     args = parser.parse_args()
 
