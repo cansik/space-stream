@@ -98,7 +98,7 @@ class DemoPipeline(vg.BaseGraph):
             cv2.putText(rgbd, "FPS: %.0f" % self.fps_tracer.smooth_fps,
                         (7, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
 
-            cv2.imshow("RGB-D FrameBuffer Sharing Demo", rgbd)
+            cv2.imshow(f"RGB-D FrameBuffer Sharing Demo ({args.stream_name})", rgbd)
             key_code = cv2.waitKey(15) & 0xFF
             if key_code == 27:
                 self.close()
