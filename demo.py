@@ -70,7 +70,7 @@ class DemoPipeline(vg.BaseGraph):
             calibration = self.input.device.calibration
             mat = calibration.get_camera_matrix(CalibrationType.DEPTH)
 
-            logging.info(f"Depth Intrinsics: {mat}")
+            logging.info(f"Depth Intrinsics:\n{mat}")
 
     def _process(self):
         ts, frame = self.input.read()
