@@ -57,6 +57,13 @@ class DemoPipeline(vg.BaseGraph):
             self.input.colorizer.set_option(rs.option.min_distance, self.min_distance)
             self.input.colorizer.set_option(rs.option.max_distance, self.max_distance)
 
+            # display intrinsics
+            profiles = self.input.pipeline.get_active_profile()
+            stream = profiles.get_stream(rs.stream.depth).as_video_stream_profile()
+            intrinsics = stream.get_intrinsics()
+
+            logging.info(f"Intrinsics: {intrinsics}")
+
     def _process(self):
         ts, frame = self.input.read()
 
@@ -167,6 +174,7 @@ class DemoPipeline(vg.BaseGraph):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RGB-D framebuffer sharing demo for visiongraph")
+    vg.add_logging_parameter(parser)
     vg.add_enum_choice_argument(parser, DepthEncoding, "--depth-encoding",
                                 help="Method how the depth map will be encoded")
     parser.add_argument("--min-distance", type=float, default=0, help="Min distance to perceive by the camera.")
@@ -181,6 +189,8 @@ if __name__ == "__main__":
     input_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
 
     args = parser.parse_args()
+
+    vg.setup_logging(args.loglevel)
 
     if issubclass(args.input, vg.BaseDepthInput):
         args.depth = True
