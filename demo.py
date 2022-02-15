@@ -191,7 +191,7 @@ if __name__ == "__main__":
         args.color_scheme = vg.RealSenseColorScheme.WhiteToBlack
 
         if not args.no_filter:
-            args.rs_filter = [rs.spatial_filter, rs.temporal_filter, rs.hole_filling_filter]
+            args.rs_filter = [rs.spatial_filter, rs.temporal_filter]
 
     if issubclass(args.input, vg.AzureKinectInput):
         args.k4a_align = True
