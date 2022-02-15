@@ -62,7 +62,15 @@ class DemoPipeline(vg.BaseGraph):
             stream = profiles.get_stream(rs.stream.depth).as_video_stream_profile()
             intrinsics = stream.get_intrinsics()
 
-            logging.info(f"Intrinsics: {intrinsics}")
+            logging.info(f"Depth Intrinsics: {intrinsics}")
+
+        if isinstance(self.input, vg.AzureKinectInput):
+            from pyk4a import CalibrationType
+
+            calibration = self.input.device.calibration
+            mat = calibration.get_camera_matrix(CalibrationType.DEPTH)
+
+            logging.info(f"Depth Intrinsics: {mat}")
 
     def _process(self):
         ts, frame = self.input.read()
