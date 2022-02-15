@@ -173,6 +173,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
     parser.add_argument("--bit-depth", type=int, default=8, choices=[8, 16],
                         help="Encoding output bit depth (default: 8).")
+    parser.add_argument("--stream-name", type=str, default="RGBDStream", help="Spout / Syphon stream name.")
 
     input_group = parser.add_argument_group("input provider")
     add_input_step_choices(input_group)
@@ -196,7 +197,7 @@ if __name__ == "__main__":
         args.k4a_align = True
 
     # create frame buffer sharing client
-    fbs_client = FrameBufferSharingServer.create("RGBDStream")
+    fbs_client = FrameBufferSharingServer.create(args.stream_name)
 
     # run pipeline
     pipeline = DemoPipeline(args.input(), fbs_client, args.depth_encoding,
