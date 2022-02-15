@@ -112,7 +112,7 @@ class DemoPipeline(vg.BaseGraph):
         self.fps_tracer.update()
 
         # imshow does only work in main thread!
-        if threading.current_thread() is threading.main_thread():
+        if self.show_preview and threading.current_thread() is threading.main_thread():
             cv2.putText(rgbd, "FPS: %.0f" % self.fps_tracer.smooth_fps,
                         (7, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
 
