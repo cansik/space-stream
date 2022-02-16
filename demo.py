@@ -3,6 +3,7 @@ import logging
 import threading
 from datetime import datetime
 from enum import Enum
+from functools import partial
 from typing import Callable, Optional, List
 
 import cv2
@@ -29,12 +30,26 @@ def ease_out_quad(x):
     return x * (2 - x)
 
 
+segmentation_networks = {
+    "mediapipe": partial(vg.MediaPipePoseEstimator.create, vg.PoseModelComplexity.Normal),
+    "mediapipe-light": partial(vg.MediaPipePoseEstimator.create, vg.PoseModelComplexity.Light),
+    "mediapipe-heavy": partial(vg.MediaPipePoseEstimator.create, vg.PoseModelComplexity.Heavy),
+
+    "maskrcnn": partial(vg.MaskRCNNEstimator.create, vg.MaskRCNNConfig.EfficientNet_608_FP32),
+    "maskrcnn-eff-480": partial(vg.MaskRCNNEstimator.create, vg.MaskRCNNConfig.EfficientNet_480_FP16),
+    "maskrcnn-eff-608": partial(vg.MaskRCNNEstimator.create, vg.MaskRCNNConfig.EfficientNet_608_FP16),
+    "maskrcnn-res50-768": partial(vg.MaskRCNNEstimator.create, vg.MaskRCNNConfig.ResNet50_1024x768_FP16),
+    "maskrcnn-res101-800": partial(vg.MaskRCNNEstimator.create, vg.MaskRCNNConfig.ResNet101_1344x800_FP16)
+}
+
+
 class DemoPipeline(vg.BaseGraph):
 
     def __init__(self, stream_name: str, input: vg.BaseInput, fbs_client: FrameBufferSharingServer,
                  encoding: DepthEncoding = DepthEncoding.Colorizer,
                  min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8,
-                 record: bool = False, masking: bool = False):
+                 record: bool = False, masking: bool = False,
+                 segnet: Optional[vg.InstanceSegmentationEstimator] = None):
         super().__init__(False, False, handle_signals=True)
 
         self.stream_name = stream_name
@@ -58,7 +73,9 @@ class DemoPipeline(vg.BaseGraph):
         self.segmentation_network: Optional[vg.InstanceSegmentationEstimator] = None
 
         if self.masking:
-            self.segmentation_network = vg.MediaPipePoseEstimator(enable_segmentation=True)
+            self.segmentation_network = segnet
+            if isinstance(self.segmentation_network, vg.MediaPipePoseEstimator):
+                self.segmentation_network.enable_segmentation = True
             self.add_nodes(self.segmentation_network)
 
         self.add_nodes(self.input, self.fbs_client)
@@ -246,6 +263,8 @@ if __name__ == "__main__":
 
     masking_group = parser.add_argument_group("masking")
     masking_group.add_argument("--mask", action="store_true", help="Apply mask by segmentation algorithm.")
+    vg.add_step_choice_argument(parser, segmentation_networks, name="--segnet", default="mediapipe",
+                                help="Segmentation Network", add_params=False)
 
     debug_group = parser.add_argument_group("debug")
     debug_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
@@ -276,6 +295,6 @@ if __name__ == "__main__":
     # run pipeline
     pipeline = DemoPipeline(args.stream_name, args.input(), fbs_client, args.depth_encoding,
                             args.min_distance, args.max_distance, args.bit_depth,
-                            args.record, args.mask)
+                            args.record, args.mask, args.segnet())
     pipeline.configure(args)
     pipeline.open()
