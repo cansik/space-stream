@@ -6,6 +6,7 @@ from enum import Enum
 from functools import partial
 from typing import Callable, Optional, List
 
+import configargparse
 import cv2
 import numpy as np
 import pyrealsense2 as rs
@@ -252,7 +253,8 @@ class DemoPipeline(vg.BaseGraph):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="RGB-D framebuffer sharing demo for visiongraph")
+    parser = configargparse.ArgumentParser(description="RGB-D framebuffer sharing demo for visiongraph")
+    parser.add_argument("-c", "--config", required=False, is_config_file=True, help="Configuration file path.")
     vg.add_logging_parameter(parser)
     vg.add_enum_choice_argument(parser, DepthEncoding, "--depth-encoding",
                                 help="Method how the depth map will be encoded")

@@ -54,24 +54,35 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 #### Help
 
 ```
-usage: demo.py [-h] [--depth-encoding Colorizer,Linear,Quad]
+usage: demo.py [-h] [-c CONFIG]
+               [--loglevel {critical,error,warning,info,debug}]
+               [--depth-encoding Colorizer,Linear,Quad]
                [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
-               [--bit-depth {8,16}] [--input video-capture,realsense]
+               [--bit-depth {8,16}] [--stream-name STREAM_NAME]
+               [--input video-capture,image,realsense]
                [--input-size width height] [--input-fps INPUT_FPS]
                [--input-rotate 90,-90,180] [--input-flip h,v] [--raw-input]
-               [--channel CHANNEL] [--input-skip INPUT_SKIP] [-ir]
-               [--exposure EXPOSURE] [--gain GAIN] [--rs-serial RS_SERIAL]
-               [--rs-play-bag RS_PLAY_BAG] [--rs-record-bag RS_RECORD_BAG]
-               [--disable-emitter] [--depth]
+               [--channel CHANNEL] [--input-skip INPUT_SKIP]
+               [--input-path INPUT_PATH] [--input-delay INPUT_DELAY] [--depth]
+               [--depth-as-input] [-ir] [--exposure EXPOSURE] [--gain GAIN]
+               [--white-balance WHITE_BALANCE] [--rs-serial RS_SERIAL]
+               [--rs-json RS_JSON] [--rs-play-bag RS_PLAY_BAG]
+               [--rs-record-bag RS_RECORD_BAG] [--rs-disable-emitter]
                [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
-               [--depth-as-input]
-               [--color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
-               [--no-filter]
+               [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
+               [--mask]
+               [--segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800]
+               [--no-filter] [--no-preview] [--record]
 
 RGB-D framebuffer sharing demo for visiongraph
 
 optional arguments:
   -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        Configuration file path.
+  --loglevel {critical,error,warning,info,debug}
+                        Provide logging level. Example --loglevel debug,
+                        default=warning
   --depth-encoding Colorizer,Linear,Quad
                         Method how the depth map will be encoded, default:
                         Colorizer.
@@ -80,9 +91,13 @@ optional arguments:
   --max-distance MAX_DISTANCE
                         Max distance to perceive by the camera.
   --bit-depth {8,16}    Encoding output bit depth (default: 8).
+  --stream-name STREAM_NAME
+                        Spout / Syphon stream name.
+  --segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800
+                        Segmentation Network, default: mediapipe.
 
 input provider:
-  --input video-capture,realsense
+  --input video-capture,image,realsense
                         Image input provider, default: video-capture.
   --input-size width height
                         Requested input media size.
@@ -97,25 +112,39 @@ input provider:
   --input-skip INPUT_SKIP
                         If set the input will be skipped to the value in
                         milliseconds.
-  -ir, --infrared       Use infrared as input stream (RealSense).
-  --exposure EXPOSURE   Exposure value (usec) for realsense input (disables
+  --input-path INPUT_PATH
+                        Path to the input image.
+  --input-delay INPUT_DELAY
+                        Input delay time (s).
+  --depth               Enable RealSense depth stream.
+  --depth-as-input      Use colored depth stream as input stream.
+  -ir, --infrared       Use infrared as input stream.
+  --exposure EXPOSURE   Exposure value (usec) for depth camera input (disables
                         auto-exposure).
-  --gain GAIN           Gain value for realsense input (disables auto-
-                        exposure).
+  --gain GAIN           Gain value for depth input (disables auto-exposure).
+  --white-balance WHITE_BALANCE
+                        White-Balance value for depth input (disables auto-
+                        white-balance).
   --rs-serial RS_SERIAL
                         RealSense serial number to choose specific device.
+  --rs-json RS_JSON     RealSense json configuration to apply.
   --rs-play-bag RS_PLAY_BAG
                         Path to a pre-recorded bag file for playback.
   --rs-record-bag RS_RECORD_BAG
                         Path to a bag file to store the current recording.
-  --disable-emitter     Disable RealSense IR emitter.
-  --depth               Enable RealSense depth stream.
+  --rs-disable-emitter  Disable RealSense IR emitter.
   --rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]
                         RealSense depth filter.
-  --depth-as-input      Use colored depth stream as input stream.
-  --color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern
+  --rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern
                         Color scheme for depth map, default: WhiteToBlack.
+
+masking:
+  --mask                Apply mask by segmentation algorithm.
+
+debug:
   --no-filter           Disable realsense image filter.
+  --no-preview          Disable preview to speed.
+  --record              Record output into recordings folder.
 ```
 
 ### About

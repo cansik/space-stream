@@ -1,6 +1,7 @@
 --find-links https://github.com/cansik/data-storage/releases/tag/packages
 
 # general imports
+configargparse
 visiongraph[realsense, azure, mediapipe, openvino]==0.1.17
 pyopengl
 
