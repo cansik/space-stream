@@ -91,10 +91,14 @@ class DemoPipeline(vg.BaseGraph):
 
             # display intrinsics
             profiles = self.input.pipeline.get_active_profile()
+
             stream = profiles.get_stream(rs.stream.depth).as_video_stream_profile()
             intrinsics = stream.get_intrinsics()
-
             logging.info(f"Depth Intrinsics: {intrinsics}")
+
+            stream = profiles.get_stream(rs.stream.color).as_video_stream_profile()
+            intrinsics = stream.get_intrinsics()
+            logging.info(f"RGB Intrinsics: {intrinsics}")
 
         if isinstance(self.input, vg.AzureKinectInput):
             from pyk4a import CalibrationType
