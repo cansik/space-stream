@@ -3,7 +3,7 @@ import logging
 import threading
 from datetime import datetime
 from enum import Enum
-from typing import Callable, Optional
+from typing import Callable, Optional, List
 
 import cv2
 import numpy as np
@@ -33,7 +33,8 @@ class DemoPipeline(vg.BaseGraph):
 
     def __init__(self, stream_name: str, input: vg.BaseInput, fbs_client: FrameBufferSharingServer,
                  encoding: DepthEncoding = DepthEncoding.Colorizer,
-                 min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8, record: bool = False):
+                 min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8,
+                 record: bool = False, masking: bool = False):
         super().__init__(False, False, handle_signals=True)
 
         self.stream_name = stream_name
@@ -52,6 +53,13 @@ class DemoPipeline(vg.BaseGraph):
         self.recorder: Optional[vg.CV2VideoRecorder] = None
 
         self.show_preview = True
+
+        self.masking = masking
+        self.segmentation_network: Optional[vg.InstanceSegmentationEstimator] = None
+
+        if self.masking:
+            self.segmentation_network = vg.MediaPipePoseEstimator(enable_segmentation=True)
+            self.add_nodes(self.segmentation_network)
 
         self.add_nodes(self.input, self.fbs_client)
 
@@ -114,6 +122,12 @@ class DemoPipeline(vg.BaseGraph):
             if depth_map.shape != frame.shape:
                 h, w = frame.shape[:2]
                 depth_map = cv2.resize(depth_map, (w, h))
+
+            if self.masking:
+                segmentations: List[vg.InstanceSegmentationResult] = self.segmentation_network.process(frame)
+                for segment in segmentations:
+                    frame = self.mask_image(frame, segment.mask)
+                    depth_map = self.mask_image(depth_map, segment.mask)
 
             rgbd = np.hstack((depth_map, frame))
         else:
@@ -202,6 +216,11 @@ class DemoPipeline(vg.BaseGraph):
         return out.astype(np.uint8)
 
     @staticmethod
+    def mask_image(image: np.ndarray, mask: np.ndarray) -> np.ndarray:
+        masked = cv2.bitwise_and(image, image, mask=mask)
+        return masked
+
+    @staticmethod
     def add_params(parser: argparse.ArgumentParser):
         pass
 
@@ -224,6 +243,9 @@ if __name__ == "__main__":
 
     input_group = parser.add_argument_group("input provider")
     add_input_step_choices(input_group)
+
+    masking_group = parser.add_argument_group("masking")
+    masking_group.add_argument("--mask", action="store_true", help="Apply mask by segmentation algorithm.")
 
     debug_group = parser.add_argument_group("debug")
     debug_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
@@ -254,6 +276,6 @@ if __name__ == "__main__":
     # run pipeline
     pipeline = DemoPipeline(args.stream_name, args.input(), fbs_client, args.depth_encoding,
                             args.min_distance, args.max_distance, args.bit_depth,
-                            args.record)
+                            args.record, args.mask)
     pipeline.configure(args)
     pipeline.open()
