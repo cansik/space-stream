@@ -1,8 +1,9 @@
 import argparse
 import logging
 import threading
+from datetime import datetime
 from enum import Enum
-from typing import Callable
+from typing import Callable, Optional
 
 import cv2
 import numpy as np
@@ -30,11 +31,12 @@ def ease_out_quad(x):
 
 class DemoPipeline(vg.BaseGraph):
 
-    def __init__(self, input: vg.BaseInput, fbs_client: FrameBufferSharingServer,
+    def __init__(self, stream_name: str, input: vg.BaseInput, fbs_client: FrameBufferSharingServer,
                  encoding: DepthEncoding = DepthEncoding.Colorizer,
-                 min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8):
+                 min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8, record: bool = False):
         super().__init__(False, False, handle_signals=True)
 
+        self.stream_name = stream_name
         self.input = input
         self.fbs_client = fbs_client
         self.fps_tracer = vg.FPSTracer()
@@ -45,6 +47,9 @@ class DemoPipeline(vg.BaseGraph):
         self.min_distance = min_distance
         self.max_distance = max_distance
         self.bit_depth = bit_depth
+
+        self.record = record
+        self.recorder: Optional[vg.CV2VideoRecorder] = None
 
         self.show_preview = True
 
@@ -81,6 +86,16 @@ class DemoPipeline(vg.BaseGraph):
         if frame is None:
             return
 
+        # start recording
+        if self.record and self.recorder is None:
+            h, w = frame.shape[:2]
+            rw = w * 2
+            rh = h
+            time_str = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
+            output_file_path = f"recordings/{self.stream_name}-{time_str}.mp4"
+            self.recorder = vg.CV2VideoRecorder(rw, rh, output_file_path, fps=self.input.fps)
+            self.recorder.open()
+
         if isinstance(self.input, vg.BaseDepthInput):
             if isinstance(self.input, vg.RealSenseInput):
                 self.depth_units = self.input.depth_frame.get_units()
@@ -109,6 +124,9 @@ class DemoPipeline(vg.BaseGraph):
         bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
         self.fbs_client.send(bgrd)
 
+        if self.record and self.recorder is not None:
+            self.recorder.add_image(bgrd)
+
         self.fps_tracer.update()
 
         # imshow does only work in main thread!
@@ -116,7 +134,7 @@ class DemoPipeline(vg.BaseGraph):
             cv2.putText(rgbd, "FPS: %.0f" % self.fps_tracer.smooth_fps,
                         (7, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
 
-            cv2.imshow(f"RGB-D FrameBuffer Sharing Demo ({args.stream_name})", rgbd)
+            cv2.imshow(f"RGB-D FrameBuffer Sharing Demo ({self.stream_name})", rgbd)
             key_code = cv2.waitKey(15) & 0xFF
             if key_code == 27:
                 self.close()
@@ -142,6 +160,11 @@ class DemoPipeline(vg.BaseGraph):
                 if index < len(encodings):
                     self.encoding = encodings[index]
                     print(f"Switch to {self.encoding} ({index})")
+
+    def _release(self):
+        super()._release()
+        if self.record and self.recorder is not None:
+            self.recorder.close()
 
     def encode_depth_information(self, device: vg.BaseDepthInput,
                                  interpolation: Callable,
@@ -202,8 +225,10 @@ if __name__ == "__main__":
     input_group = parser.add_argument_group("input provider")
     add_input_step_choices(input_group)
 
-    input_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
-    input_group.add_argument("--no-preview", action="store_true", help="Disable preview to speed.")
+    debug_group = parser.add_argument_group("debug")
+    debug_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
+    debug_group.add_argument("--no-preview", action="store_true", help="Disable preview to speed.")
+    debug_group.add_argument("--record", action="store_true", help="Record output into recordings folder.")
 
     args = parser.parse_args()
 
@@ -227,7 +252,8 @@ if __name__ == "__main__":
     fbs_client = FrameBufferSharingServer.create(args.stream_name)
 
     # run pipeline
-    pipeline = DemoPipeline(args.input(), fbs_client, args.depth_encoding,
-                            args.min_distance, args.max_distance, args.bit_depth)
+    pipeline = DemoPipeline(args.stream_name, args.input(), fbs_client, args.depth_encoding,
+                            args.min_distance, args.max_distance, args.bit_depth,
+                            args.record)
     pipeline.configure(args)
     pipeline.open()
