@@ -151,7 +151,7 @@ class DemoPipeline(vg.BaseGraph):
 
             # read depth map and create rgb-d
             if self.encoding == DepthEncoding.Colorizer:
-                depth_map = depth
+                depth_map = self.input.depth_map
             elif self.encoding == DepthEncoding.Linear:
                 depth_map = self.encode_depth_information(depth, linear_interpolate, self.bit_depth)
             elif self.encoding == DepthEncoding.Quad:
