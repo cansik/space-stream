@@ -50,7 +50,7 @@ class DemoPipeline(vg.BaseGraph):
                  encoding: DepthEncoding = DepthEncoding.Colorizer,
                  min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8,
                  record: bool = False, masking: bool = False,
-                 segnet: Optional[vg.InstanceSegmentationEstimator] = None):
+                 segnet: Optional[vg.InstanceSegmentationEstimator] = None, use_midas: bool = False):
         super().__init__(False, False, handle_signals=True)
 
         self.stream_name = stream_name
@@ -78,6 +78,13 @@ class DemoPipeline(vg.BaseGraph):
             if isinstance(self.segmentation_network, vg.MediaPipePoseEstimator):
                 self.segmentation_network.enable_segmentation = True
             self.add_nodes(self.segmentation_network)
+
+        self.use_midas = use_midas
+        self.midas_net: Optional[vg.MidasDepthEstimator] = None
+
+        if self.use_midas:
+            self.midas_net = vg.MidasDepthEstimator.create(vg.MidasConfig.MidasSmall)
+            self.add_nodes(self.midas_net)
 
         self.add_nodes(self.input, self.fbs_client)
 
@@ -130,13 +137,18 @@ class DemoPipeline(vg.BaseGraph):
             if isinstance(self.input, vg.RealSenseInput):
                 self.depth_units = self.input.depth_frame.get_units()
 
+            if self.midas_net is not None:
+                input_depth_map = self.midas_net.process(frame)
+            else:
+                input_depth_map = self.input.depth_map
+
             # read depth map and create rgb-d
             if self.encoding == DepthEncoding.Colorizer:
-                depth_map = self.input.depth_map
+                depth_map = input_depth_map
             elif self.encoding == DepthEncoding.Linear:
-                depth_map = self.encode_depth_information(self.input, linear_interpolate, self.bit_depth)
+                depth_map = self.encode_depth_information(input_depth_map, linear_interpolate, self.bit_depth)
             elif self.encoding == DepthEncoding.Quad:
-                depth_map = self.encode_depth_information(self.input, ease_out_quad, self.bit_depth)
+                depth_map = self.encode_depth_information(input_depth_map, ease_out_quad, self.bit_depth)
             else:
                 raise Exception("No encoding method is set!")
 
@@ -202,7 +214,7 @@ class DemoPipeline(vg.BaseGraph):
         if self.record and self.recorder is not None:
             self.recorder.close()
 
-    def encode_depth_information(self, device: vg.BaseDepthInput,
+    def encode_depth_information(self, depth: np.ndarray,
                                  interpolation: Callable,
                                  bit_depth: int) -> np.ndarray:
         # prepare information
@@ -212,7 +224,6 @@ class DemoPipeline(vg.BaseGraph):
         total_unique_values = pow(2, bit_depth) - 1
 
         # read depth, clip, normalize and map
-        depth = device.depth_buffer
         depth[depth == 0] = max_value  # set 0 (no-data points) to max value
         depth = np.clip(depth, min_value, max_value)
         depth = (depth - min_value) / d_value  # normalize
@@ -266,6 +277,7 @@ if __name__ == "__main__":
 
     input_group = parser.add_argument_group("input provider")
     add_input_step_choices(input_group)
+    input_group.add_argument("--midas", action="store_true", help="Use midas for depth capture.")
 
     masking_group = parser.add_argument_group("masking")
     masking_group.add_argument("--mask", action="store_true", help="Apply mask by segmentation algorithm.")
@@ -301,6 +313,6 @@ if __name__ == "__main__":
     # run pipeline
     pipeline = DemoPipeline(args.stream_name, args.input(), fbs_client, args.depth_encoding,
                             args.min_distance, args.max_distance, args.bit_depth,
-                            args.record, args.mask, args.segnet())
+                            args.record, args.mask, args.segnet(), args.midas)
     pipeline.configure(args)
     pipeline.open()
