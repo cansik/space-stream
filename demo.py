@@ -84,6 +84,7 @@ class DemoPipeline(vg.BaseGraph):
 
         if self.use_midas:
             self.midas_net = vg.MidasDepthEstimator.create(vg.MidasConfig.MidasSmall)
+            self.midas_net.prediction_bit_depth = 16
             self.add_nodes(self.midas_net)
 
         self.add_nodes(self.input, self.fbs_client)
@@ -93,9 +94,10 @@ class DemoPipeline(vg.BaseGraph):
 
         # set colorizer min and max settings
         if isinstance(self.input, vg.RealSenseInput):
-            self.input.colorizer.set_option(rs.option.histogram_equalization_enabled, 0)
-            self.input.colorizer.set_option(rs.option.min_distance, self.min_distance)
-            self.input.colorizer.set_option(rs.option.max_distance, self.max_distance)
+            if not self.use_midas:
+                self.input.colorizer.set_option(rs.option.histogram_equalization_enabled, 0)
+                self.input.colorizer.set_option(rs.option.min_distance, self.min_distance)
+                self.input.colorizer.set_option(rs.option.max_distance, self.max_distance)
 
             # display intrinsics
             profiles = self.input.pipeline.get_active_profile()
@@ -148,6 +150,9 @@ class DemoPipeline(vg.BaseGraph):
                 depth_buffer = self.input
 
             depth = depth_buffer.depth_buffer
+
+            if self.use_midas:
+                depth = pow(2, 16) - depth
 
             # read depth map and create rgb-d
             if self.encoding == DepthEncoding.Colorizer:
