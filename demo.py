@@ -145,7 +145,7 @@ class DemoPipeline(vg.BaseGraph):
             if self.midas_net is not None:
                 depth_buffer = self.midas_net.process(frame)
             else:
-                depth_buffer = self.input.depth_buffer
+                depth_buffer = self.input
 
             depth = depth_buffer.depth_buffer
 
