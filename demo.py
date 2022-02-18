@@ -143,17 +143,19 @@ class DemoPipeline(vg.BaseGraph):
                 self.depth_units = self.input.depth_frame.get_units()
 
             if self.midas_net is not None:
-                input_depth_map = self.midas_net.process(frame)
+                depth_buffer = self.midas_net.process(frame)
             else:
-                input_depth_map = self.input.depth_map
+                depth_buffer = self.input.depth_buffer
+
+            depth = depth_buffer.depth_buffer
 
             # read depth map and create rgb-d
             if self.encoding == DepthEncoding.Colorizer:
-                depth_map = input_depth_map
+                depth_map = depth
             elif self.encoding == DepthEncoding.Linear:
-                depth_map = self.encode_depth_information(input_depth_map, linear_interpolate, self.bit_depth)
+                depth_map = self.encode_depth_information(depth, linear_interpolate, self.bit_depth)
             elif self.encoding == DepthEncoding.Quad:
-                depth_map = self.encode_depth_information(input_depth_map, ease_out_quad, self.bit_depth)
+                depth_map = self.encode_depth_information(depth, ease_out_quad, self.bit_depth)
             else:
                 raise Exception("No encoding method is set!")
 
