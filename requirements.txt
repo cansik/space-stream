@@ -2,7 +2,7 @@
 
 # general imports
 configargparse
-visiongraph[realsense, azure, mediapipe, openvino]==0.1.17
+visiongraph[realsense, azure, mediapipe, openvino, onnx]==0.1.17
 pyopengl
 
 # macos
