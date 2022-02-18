@@ -133,6 +133,11 @@ class DemoPipeline(vg.BaseGraph):
             self.recorder = vg.CV2VideoRecorder(rw, rh, output_file_path, fps=self.input.fps)
             self.recorder.open()
 
+        if self.masking:
+            segmentations: List[vg.InstanceSegmentationResult] = self.segmentation_network.process(frame)
+            for segment in segmentations:
+                frame = self.mask_image(frame, segment.mask)
+
         if isinstance(self.input, vg.BaseDepthInput):
             if isinstance(self.input, vg.RealSenseInput):
                 self.depth_units = self.input.depth_frame.get_units()
@@ -158,9 +163,7 @@ class DemoPipeline(vg.BaseGraph):
                 depth_map = cv2.resize(depth_map, (w, h))
 
             if self.masking:
-                segmentations: List[vg.InstanceSegmentationResult] = self.segmentation_network.process(frame)
                 for segment in segmentations:
-                    frame = self.mask_image(frame, segment.mask)
                     depth_map = self.mask_image(depth_map, segment.mask)
 
             rgbd = np.hstack((depth_map, frame))
