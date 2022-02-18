@@ -251,7 +251,7 @@ class DemoPipeline(vg.BaseGraph):
         # bit depth 16 bit
         out = np.expand_dims(depth, axis=2)
 
-        r_channel = depth / 256
+        r_channel = out / 256
         g_channel = (out >> 8) & 0xff
         b_channel = out & 0xff
 
