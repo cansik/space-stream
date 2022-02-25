@@ -2,8 +2,6 @@ import argparse
 import logging
 import threading
 from datetime import datetime
-from enum import Enum
-from functools import partial
 from typing import Callable, Optional, List
 
 import cv2
@@ -105,6 +103,25 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
             logging.info(f"Serial: {self.input.device.serial}")
             logging.info(f"Depth Intrinsics:\n{mat}")
+
+    def get_intrinsics(self) -> np.ndarray:
+        if isinstance(self.input, vg.RealSenseInput):
+            profiles = self.input.pipeline.get_active_profile()
+
+            stream = profiles.get_stream(rs.stream.color).as_video_stream_profile()
+            intrinsics = stream.get_intrinsics()
+            return np.array([[intrinsics.fx, 0, intrinsics.ppx],
+                             [0, intrinsics.fy, intrinsics.ppy],
+                             [0, 0, 1]])
+
+        if isinstance(self.input, vg.AzureKinectInput):
+            from pyk4a import CalibrationType
+
+            calibration = self.input.device.calibration
+            mat = calibration.get_camera_matrix(CalibrationType.DEPTH)
+            return mat
+
+        return np.ndarray(shape=(3, 3))
 
     def _process(self):
         ts, frame = self.input.read()
