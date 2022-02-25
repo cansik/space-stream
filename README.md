@@ -1,5 +1,5 @@
-# Spout & Syphon RGB-D Example
-An example which streams RGB-D images over spout / syphon with visiongraph.
+# Space Stream
+Send RGB-D images over spout / syphon with visiongraph.
 
 ![Example Map](images/example.jpg)
 *Source: Intel® RealSense™ [Sample Data](https://github.com/IntelRealSense/librealsense/blob/master/doc/sample-data.md)*
@@ -13,16 +13,16 @@ pip install -r requirements.txt
 ```
 
 ### Usage
-Simply run the [demo.py](demo.py) with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) and check the result there.
+Simply run the `spacestream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
 
 ```
-python demo.py --input realsense
+python -m spacestream --input realsense
 ```
 
 To use the Azure Kinect use the `azure` input type:
 
 ```
-python demo.py --input azure
+python -m spacestream --input azure
 ```
 
 #### Depth Encoding
@@ -37,7 +37,7 @@ To convert the `Quad` encoding back it is possible to use `1-sqrt(x)`.
 And it is possible to set the specific encoding by using the `--depth-encoding` parameter or by using the number keys on the viewer (0 = Colorizer, 1 = Linear, ..).
 
 ```
-python demo.py --input realsense --depth-encoding Quad
+python -m spacestream --input realsense --depth-encoding Quad
 ```
 
 #### Bit Depth
@@ -45,7 +45,7 @@ By default the bit depth is 8bit, but it is also possible to change it to a 16 b
 To change the bit-depth use the parameter `--bit-depth` or the keyboard key `b` in the viewer:
 
 ```
-python demo.py --input realsense --depth-encoding Quad --bit-depth 16
+python -m spacestream --input realsense --depth-encoding Quad --bit-depth 16
 ```
 
 #### Distance Range
@@ -54,25 +54,26 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 #### Help
 
 ```
-usage: demo.py [-h] [-c CONFIG]
-               [--loglevel {critical,error,warning,info,debug}]
-               [--depth-encoding Colorizer,Linear,Quad]
-               [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
-               [--bit-depth {8,16}] [--stream-name STREAM_NAME]
-               [--input video-capture,image,realsense]
-               [--input-size width height] [--input-fps INPUT_FPS]
-               [--input-rotate 90,-90,180] [--input-flip h,v] [--raw-input]
-               [--channel CHANNEL] [--input-skip INPUT_SKIP]
-               [--input-path INPUT_PATH] [--input-delay INPUT_DELAY] [--depth]
-               [--depth-as-input] [-ir] [--exposure EXPOSURE] [--gain GAIN]
-               [--white-balance WHITE_BALANCE] [--rs-serial RS_SERIAL]
-               [--rs-json RS_JSON] [--rs-play-bag RS_PLAY_BAG]
-               [--rs-record-bag RS_RECORD_BAG] [--rs-disable-emitter]
-               [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
-               [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
-               [--mask]
-               [--segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800]
-               [--no-filter] [--no-preview] [--record]
+usage: spacestream [-h] [-c CONFIG]
+                   [--loglevel {critical,error,warning,info,debug}]
+                   [--depth-encoding Colorizer,Linear,Quad]
+                   [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
+                   [--bit-depth {8,16}] [--stream-name STREAM_NAME]
+                   [--input video-capture,image,realsense]
+                   [--input-size width height] [--input-fps INPUT_FPS]
+                   [--input-rotate 90,-90,180] [--input-flip h,v]
+                   [--raw-input] [--channel CHANNEL] [--input-skip INPUT_SKIP]
+                   [--input-path INPUT_PATH] [--input-delay INPUT_DELAY]
+                   [--depth] [--depth-as-input] [-ir] [--exposure EXPOSURE]
+                   [--gain GAIN] [--white-balance WHITE_BALANCE]
+                   [--rs-serial RS_SERIAL] [--rs-json RS_JSON]
+                   [--rs-play-bag RS_PLAY_BAG] [--rs-record-bag RS_RECORD_BAG]
+                   [--rs-disable-emitter]
+                   [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
+                   [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
+                   [--midas] [--mask]
+                   [--segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800]
+                   [--no-filter] [--no-preview] [--record]
 
 RGB-D framebuffer sharing demo for visiongraph
 
@@ -137,6 +138,7 @@ input provider:
                         RealSense depth filter.
   --rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern
                         Color scheme for depth map, default: WhiteToBlack.
+  --midas               Use midas for depth capture.
 
 masking:
   --mask                Apply mask by segmentation algorithm.

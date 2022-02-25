@@ -6,7 +6,7 @@ import SpoutGL
 import numpy as np
 from OpenGL import GL
 
-from fbs.FrameBufferSharingServer import FrameBufferSharingServer
+from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 
 class SpoutServer(FrameBufferSharingServer):

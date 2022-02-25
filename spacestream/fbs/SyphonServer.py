@@ -1,4 +1,3 @@
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Optional, Any
 
@@ -32,7 +31,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from fbs.FrameBufferSharingServer import FrameBufferSharingServer
+from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 
 class SyphonServer(FrameBufferSharingServer):
