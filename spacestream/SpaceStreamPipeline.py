@@ -71,10 +71,13 @@ class SpaceStreamPipeline(vg.BaseGraph):
         # events
         self.on_frame_ready: Optional[Callable[[np.ndarray], None]] = None
 
-        self.add_nodes(self.input, self.fbs_client)
+        self.add_nodes(self.input)
 
     def _init(self):
         super()._init()
+
+        if threading.current_thread() is threading.main_thread():
+            self.fbs_client.setup()
 
         # set colorizer min and max settings
         if isinstance(self.input, vg.RealSenseInput):
@@ -162,9 +165,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
             # just send rgb image for testing
             rgbd = frame
 
-        # send rgb-d over spout
-        bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
-        self.fbs_client.send(bgrd)
+        if threading.current_thread() is threading.main_thread():
+            # send rgb-d over spout
+            bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
+            self.fbs_client.send(bgrd)
 
         if self.record and self.recorder is not None:
             self.recorder.add_image(bgrd)
@@ -207,6 +211,9 @@ class SpaceStreamPipeline(vg.BaseGraph):
                     print(f"Switch to {self.encoding} ({index})")
 
     def _release(self):
+        if threading.current_thread() is threading.main_thread():
+            self.fbs_client.release()
+
         super()._release()
         if self.record and self.recorder is not None:
             self.recorder.close()

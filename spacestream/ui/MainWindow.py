@@ -40,6 +40,7 @@ class MainWindow:
         signal.signal(signal.SIGINT, self._signal_handler)
 
         # start pipeline
+        pipeline.fbs_client.setup()
         pipeline.open()
 
     def _signal_handler(self, signal, frame):
@@ -56,13 +57,17 @@ class MainWindow:
                                          content_rect.height)
 
     def _on_close(self):
+        self.pipeline.fbs_client.release()
         self.pipeline.close()
         gui.Application.instance.quit()
 
     def on_frame_ready(self, frame: np.ndarray):
-        image = o3d.geometry.Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        bgrd = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        image = o3d.geometry.Image(bgrd)
 
         def update():
+            # send stream
+            self.pipeline.fbs_client.send(bgrd)
             self.rgb_widget.update_image(image)
 
         gui.Application.instance.post_to_main_thread(self.window, update)
