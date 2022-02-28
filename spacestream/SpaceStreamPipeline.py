@@ -168,10 +168,14 @@ class SpaceStreamPipeline(vg.BaseGraph):
             else:
                 raise Exception("No encoding method is set!")
 
+            # fix realsense image if it has been aligned to remove lines
+            if isinstance(self.input, vg.RealSenseInput):
+                depth_map = cv2.medianBlur(depth_map, 3)
+
             # resize to match rgb image if necessary
             if depth_map.shape != frame.shape:
                 h, w = frame.shape[:2]
-                depth_map = cv2.resize(depth_map, (w, h))
+                depth_map = cv2.resize(depth_map, (w, h), interpolation=cv2.INTER_AREA)
 
             if self.masking:
                 for segment in segmentations:
@@ -196,7 +200,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self.on_frame_ready(rgbd)
 
         # imshow does only work in main thread!
-        if threading.current_thread() is threading.main_thread():
+        if False and threading.current_thread() is threading.main_thread():
             cv2.putText(rgbd, "FPS: %.0f" % self.fps_tracer.smooth_fps,
                         (7, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
 
@@ -247,13 +251,18 @@ class SpaceStreamPipeline(vg.BaseGraph):
         # read depth, clip, normalize and map
         depth[depth == 0] = max_value  # set 0 (no-data points) to max value
         depth = np.clip(depth, min_value, max_value)
-        depth = (depth - min_value) / d_value  # normalize
 
-        depth = interpolation(depth)
-        depth = 1.0 - depth  # flip
+        depth = (depth - min_value) * total_unique_values
+        depth = total_unique_values - depth
+        depth = (depth / d_value).astype(np.uint16)
+
+        # depth = (depth - min_value) / d_value  # normalize
+
+        # depth = interpolation(depth)
+        # depth = 1.0 - depth  # flip
 
         # convert to new bit range
-        depth = (depth * total_unique_values).astype(np.uint16)
+        # depth = (depth * total_unique_values).astype(np.uint16)
 
         # map to RGB image (8 or 16 bit)
         if bit_depth == 8:
