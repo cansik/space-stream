@@ -168,10 +168,14 @@ class SpaceStreamPipeline(vg.BaseGraph):
             else:
                 raise Exception("No encoding method is set!")
 
+            # fix realsense image if it has been aligned to remove lines
+            if isinstance(self.input, vg.RealSenseInput):
+                depth_map = cv2.medianBlur(depth_map, 3)
+
             # resize to match rgb image if necessary
             if depth_map.shape != frame.shape:
                 h, w = frame.shape[:2]
-                depth_map = cv2.resize(depth_map, (w, h))
+                depth_map = cv2.resize(depth_map, (w, h), interpolation=cv2.INTER_AREA)
 
             if self.masking:
                 for segment in segmentations:
