@@ -45,8 +45,9 @@ class PipelineView:
         self.pcdview.scene.set_lighting(
             rendering.Open3DScene.LightingProfile.SOFT_SHADOWS, [0, -6, 0])
         # Point cloud bounds, depends on the sensor range
-        self.pcd_bounds = o3d.geometry.AxisAlignedBoundingBox([-3, -3, 0],
-                                                              [3, 3, 6])
+        size = 0.3
+        self.pcd_bounds = o3d.geometry.AxisAlignedBoundingBox([-size, -size, 0],
+                                                              [size, size, size * 2])
         self.camera_view()  # Initially look from the camera
         em = self.window.theme.font_size
 
@@ -107,6 +108,13 @@ class PipelineView:
         # Look at [0, 0, 1] from camera placed at [0, 0, 0] with Y axis
         # pointing at [0, -1, 0]
         self.pcdview.scene.camera.look_at([0, 0, 1], [0, 0, 0], [0, -1, 0])
+        cam: o3d.visualization.rendering.Camera = self.pcdview.scene.camera
+
+        # field_of_view, aspect_ratio, far_plane, field_of_view_type
+        # cam.set_projection(60.0, 4.0 / 3.0, 0.0001, rendering.Camera.Perspective)
+
+        print(f"Near: {cam.get_near()}")
+        print(f"Far: {cam.get_far()}")
 
     def birds_eye_view(self):
         """Callback to reset point cloud view to birds eye (overhead) view"""
