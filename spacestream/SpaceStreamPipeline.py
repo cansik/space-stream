@@ -247,13 +247,18 @@ class SpaceStreamPipeline(vg.BaseGraph):
         # read depth, clip, normalize and map
         depth[depth == 0] = max_value  # set 0 (no-data points) to max value
         depth = np.clip(depth, min_value, max_value)
-        depth = (depth - min_value) / d_value  # normalize
 
-        depth = interpolation(depth)
-        depth = 1.0 - depth  # flip
+        depth = (depth - min_value) * total_unique_values
+        depth = total_unique_values - depth
+        depth = (depth / d_value).astype(np.uint16)
+
+        # depth = (depth - min_value) / d_value  # normalize
+
+        # depth = interpolation(depth)
+        # depth = 1.0 - depth  # flip
 
         # convert to new bit range
-        depth = (depth * total_unique_values).astype(np.uint16)
+        # depth = (depth * total_unique_values).astype(np.uint16)
 
         # map to RGB image (8 or 16 bit)
         if bit_depth == 8:
