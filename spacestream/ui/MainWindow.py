@@ -101,12 +101,12 @@ class MainWindow:
 
         rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(color_frame, depth_frame,
                                                                         convert_rgb_to_intensity=False,
-                                                                        depth_scale=1,
-                                                                        depth_trunc=100)
+                                                                        depth_scale=1000,
+                                                                        depth_trunc=3)
 
         mat = self.pipeline.get_intrinsics()
         intrinsics = o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault)
-        intrinsics.set_intrinsics(w, h, mat[0, 0], mat[1, 1], mat[2, 0], mat[2, 1])
+        intrinsics.set_intrinsics(w, h, mat[0, 0], mat[1, 1], mat[0, 2], mat[1, 2])
 
         pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd_image, intrinsics)
 
