@@ -77,7 +77,7 @@ class MainWindow:
         w = tw // 2
         self.pipeline_view.max_pcd_vertices = h * w
 
-        self.create_3d_cloud(cv2.resize(bgrd, (tw // 2, h // 2)))
+        self.create_3d_cloud(bgrd)
 
         def update():
             # send stream
@@ -92,29 +92,39 @@ class MainWindow:
         h, tw = frame.shape[:2]
         w = tw // 2
 
+        # settings
+        # read necessary data for visualisation
+        extrinsics = o3d.core.Tensor.eye(4, dtype=o3d.core.Dtype.Float32)
+        intrinsic_matrix = o3d.core.Tensor(
+            self.pipeline.get_intrinsics(),
+            dtype=o3d.core.Dtype.Float32)
+        depth_max = 6.0  # m
+        pcd_stride = 2  # downsample point cloud, may increase frame rate
+        flag_normals = False
+        depth_scale = 1000
+
         # split image
-        depth = frame[0:h, 0:w]
-        color = frame[0:h, w:w + w]
+        depth = (np.copy(frame[0:h, 0:w]) * 255).astype(np.uint16)
+        color = np.copy(frame[0:h, w:w + w])
 
-        color_frame = o3d.geometry.Image(color)
-        depth_frame = o3d.geometry.Image(depth)
+        color_frame = o3d.t.geometry.Image(color)
+        depth_frame = o3d.t.geometry.Image(depth)
 
-        rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(color_frame, depth_frame,
-                                                                        convert_rgb_to_intensity=False,
-                                                                        depth_scale=1000,
-                                                                        depth_trunc=3)
+        rgbd_image = o3d.t.geometry.RGBDImage(color_frame, depth_frame, True)
+        pcd = o3d.t.geometry.PointCloud.create_from_rgbd_image(rgbd_image, intrinsic_matrix, extrinsics,
+                                                               depth_scale, depth_max,
+                                                               pcd_stride, flag_normals)
 
-        mat = self.pipeline.get_intrinsics()
-        intrinsics = o3d.camera.PinholeCameraIntrinsic(o3d.camera.PinholeCameraIntrinsicParameters.PrimeSenseDefault)
-        intrinsics.set_intrinsics(w, h, mat[0, 0], mat[1, 1], mat[0, 2], mat[1, 2])
-
-        pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd_image, intrinsics)
+        o3d.t.io.write_point_cloud("test.ply", pcd)
 
         frame_elements = {
-            'color': o3d.geometry.Image(color),
-            'depth': o3d.geometry.Image(depth),
+            'color': None,
+            'depth': None,
             'pcd': pcd,
             'status_message': ""
         }
 
-        self.pipeline_view.update(frame_elements)
+        def update():
+            self.pipeline_view.update(frame_elements)
+
+        gui.Application.instance.post_to_main_thread(self.pipeline_view.window, update)
