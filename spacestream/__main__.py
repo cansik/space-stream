@@ -45,7 +45,7 @@ def parse_args():
 
     masking_group = parser.add_argument_group("masking")
     masking_group.add_argument("--mask", action="store_true", help="Apply mask by segmentation algorithm.")
-    vg.add_step_choice_argument(parser, segmentation_networks, name="--segnet", default="mediapipe",
+    vg.add_step_choice_argument(masking_group, segmentation_networks, name="--segnet", default="mediapipe",
                                 help="Segmentation Network", add_params=False)
 
     debug_group = parser.add_argument_group("debug")
