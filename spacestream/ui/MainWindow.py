@@ -13,7 +13,7 @@ from spacestream.ui.PipelineView import PipelineView
 
 
 class MainWindow:
-    def __init__(self, pipeline: SpaceStreamPipeline):
+    def __init__(self, pipeline: SpaceStreamPipeline, args):
         self.pipeline = pipeline
 
         self.window: gui.Window = gui.Application.instance.create_window(pipeline.stream_name,
@@ -42,10 +42,10 @@ class MainWindow:
         signal.signal(signal.SIGINT, self._signal_handler)
 
         # pipeline
-        self.pipeline_view = PipelineView(
-            60,
-            640 * 480,
-            on_window_close=self._on_close)
+        self.pipeline_view: Optional[PipelineView] = None
+
+        if args.view_pcd:
+            self.pipeline_view = PipelineView(60, 640 * 480, on_window_close=self._on_close)
 
         # start pipeline
         pipeline.fbs_client.setup()
@@ -75,9 +75,10 @@ class MainWindow:
 
         h, tw = bgrd.shape[:2]
         w = tw // 2
-        self.pipeline_view.max_pcd_vertices = h * w
 
-        self.create_3d_cloud(bgrd)
+        if self.pipeline_view is not None:
+            self.pipeline_view.max_pcd_vertices = h * w
+            self.create_3d_cloud(bgrd)
 
         def update():
             # send stream
@@ -115,7 +116,7 @@ class MainWindow:
                                                                depth_scale, depth_max,
                                                                pcd_stride, flag_normals)
 
-        o3d.t.io.write_point_cloud("test.ply", pcd)
+        # o3d.t.io.write_point_cloud("test.ply", pcd)
 
         frame_elements = {
             'color': None,

@@ -52,6 +52,7 @@ def parse_args():
     debug_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
     debug_group.add_argument("--no-preview", action="store_true", help="Disable preview to speed.")
     debug_group.add_argument("--record", action="store_true", help="Record output into recordings folder.")
+    debug_group.add_argument("--view-pcd", action="store_true", help="Display PCB preview.")
 
     return parser.parse_args()
 
@@ -90,7 +91,7 @@ def main():
         app = o3d.visualization.gui.Application.instance
         app.initialize()
 
-        win = MainWindow(pipeline)
+        win = MainWindow(pipeline, args)
         app.run()
     else:
         pipeline.open()
