@@ -25,7 +25,7 @@ class PipelineView:
 
         gui.Application.instance.initialize()
         self.window = gui.Application.instance.create_window(
-            "Open3D || Online RGBD Video Processing", 960, 512)
+            "PointCloud Preview", 960, 512)
         # Called on window layout (eg: resize)
         self.window.set_on_layout(self.on_layout)
         self.window.set_on_close(callbacks['on_window_close'])
@@ -49,19 +49,6 @@ class PipelineView:
                                                               [3, 3, 6])
         self.camera_view()  # Initially look from the camera
         em = self.window.theme.font_size
-
-        # Options panel
-        self.panel = gui.Vert(em, gui.Margins(em, em, em, em))
-        self.panel.preferred_width = int(360 * self.window.scaling)
-        self.window.add_child(self.panel)
-        toggles = gui.Horiz(em)
-        self.panel.add_child(toggles)
-
-        self.video_size = (int(240 * self.window.scaling),
-                           int(320 * self.window.scaling), 3)
-
-        self.status_message = gui.Label("")
-        self.panel.add_child(self.status_message)
 
         self.flag_exit = False
         self.flag_gui_init = False
@@ -112,9 +99,6 @@ class PipelineView:
                                                      frame_elements['pcd'],
                                                      update_flags)
 
-        if 'status_message' in frame_elements:
-            self.status_message.text = frame_elements["status_message"]
-
         self.pcdview.force_redraw()
 
     def camera_view(self):
@@ -136,8 +120,3 @@ class PipelineView:
         """Callback on window initialize / resize"""
         frame = self.window.content_rect
         self.pcdview.frame = frame
-        panel_size = self.panel.calc_preferred_size(layout_context,
-                                                    self.panel.Constraints())
-        self.panel.frame = gui.Rect(frame.get_right() - panel_size.width,
-                                    frame.y, panel_size.width,
-                                    panel_size.height)
