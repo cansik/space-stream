@@ -203,9 +203,6 @@ class SpaceStreamPipeline(vg.BaseGraph):
         if self.record and self.recorder is not None:
             self.recorder.add_image(bgrd)
 
-        self.fps_tracer.update()
-        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
-
         if not self.disable_preview.value and self.on_frame_ready is not None:
             self.on_frame_ready(rgbd)
 
@@ -240,6 +237,9 @@ class SpaceStreamPipeline(vg.BaseGraph):
                 if index < len(encodings):
                     self.encoding = encodings[index]
                     print(f"Switch to {self.encoding} ({index})")
+
+        self.fps_tracer.update()
+        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
 
     def _release(self):
         if threading.current_thread() is threading.main_thread():
