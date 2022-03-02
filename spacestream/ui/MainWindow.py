@@ -45,7 +45,9 @@ class MainWindow:
         self.pipeline_view: Optional[PipelineView] = None
 
         if args.view_pcd:
-            self.pipeline_view = PipelineView(60, 640 * 480, on_window_close=self._on_close)
+            self.pipeline_view = PipelineView(60, 640 * 480, self.window, on_window_close=self._on_close)
+            self.pipeline_view.window = self.window
+            self.window.add_child(self.pipeline_view.pcdview)
 
         # start pipeline
         pipeline.fbs_client.setup()
@@ -60,9 +62,18 @@ class MainWindow:
 
     def _on_layout(self, layout_context):
         content_rect = self.window.content_rect
-        self.rgb_widget.frame = gui.Rect(content_rect.x, content_rect.y,
+        pcb_view_height = 0
+
+        if self.pipeline_view is not None:
+            pcb_view_height = content_rect.width // 2
+
+            self.pipeline_view.pcdview.frame = gui.Rect(content_rect.x, content_rect.y,
                                          content_rect.width,
-                                         content_rect.height)
+                                         pcb_view_height)
+
+        self.rgb_widget.frame = gui.Rect(content_rect.x, pcb_view_height,
+                                         content_rect.width,
+                                         content_rect.height - pcb_view_height)
 
     def _on_close(self):
         self.pipeline.fbs_client.release()

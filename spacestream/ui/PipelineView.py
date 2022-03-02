@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import numpy as np
 import open3d as o3d
@@ -9,7 +10,7 @@ import open3d.visualization.rendering as rendering
 class PipelineView:
     """Controls display and user interface. All methods must run in the main thread."""
 
-    def __init__(self, vfov=60, max_pcd_vertices=1 << 20, **callbacks):
+    def __init__(self, vfov=60, max_pcd_vertices=1 << 20, window: Optional[gui.Window] = None, **callbacks):
         """Initialize.
         Args:
             vfov (float): Vertical field of view for the 3D scene.
@@ -23,12 +24,15 @@ class PipelineView:
         self.max_pcd_vertices = max_pcd_vertices
         self.flag_normals = False
 
-        gui.Application.instance.initialize()
-        self.window = gui.Application.instance.create_window(
-            "PointCloud Preview", 960, 512)
-        # Called on window layout (eg: resize)
-        self.window.set_on_layout(self.on_layout)
-        self.window.set_on_close(callbacks['on_window_close'])
+        if window is None:
+            gui.Application.instance.initialize()
+            self.window = gui.Application.instance.create_window(
+                "PointCloud Preview", 960, 512)
+            # Called on window layout (eg: resize)
+            self.window.set_on_layout(self.on_layout)
+            self.window.set_on_close(callbacks['on_window_close'])
+        else:
+            self.window = window
 
         self.pcd_material = o3d.visualization.rendering.MaterialRecord()
         self.pcd_material.shader = "defaultLit"
@@ -37,7 +41,8 @@ class PipelineView:
 
         # 3D scene
         self.pcdview = gui.SceneWidget()
-        self.window.add_child(self.pcdview)
+        if window is None:
+            self.window.add_child(self.pcdview)
         self.pcdview.enable_scene_caching(
             True)  # makes UI _much_ more responsive
         self.pcdview.scene = rendering.Open3DScene(self.window.renderer)
