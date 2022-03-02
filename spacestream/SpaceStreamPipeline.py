@@ -9,13 +9,10 @@ import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
 from simbi.model.DataField import DataField
-from simbi.ui.annotations import NumberAnnotation
 from simbi.ui.annotations.BooleanAnnotation import BooleanAnnotation
 from simbi.ui.annotations.EnumAnnotation import EnumAnnotation
 from simbi.ui.annotations.OptionsAnnotation import OptionsAnnotation
 from simbi.ui.annotations.TextAnnotation import TextAnnotation
-from simbi.ui.annotations.container.EndSectionAnnotation import EndSectionAnnotation
-from simbi.ui.annotations.container.StartSectionAnnotation import StartSectionAnnotation
 
 from spacestream.DepthEncoding import DepthEncoding
 from spacestream.fbs import FrameBufferSharingServer
