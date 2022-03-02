@@ -206,38 +206,6 @@ class SpaceStreamPipeline(vg.BaseGraph):
         if not self.disable_preview.value and self.on_frame_ready is not None:
             self.on_frame_ready(rgbd)
 
-        # imshow does only work in main thread!
-        if False and threading.current_thread() is threading.main_thread():
-            cv2.putText(rgbd, "FPS: %.0f" % self.fps_tracer.smooth_fps,
-                        (7, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1, cv2.LINE_AA)
-
-            cv2.imshow(f"RGB-D FrameBuffer Sharing Demo ({self.stream_name})", rgbd)
-            key_code = cv2.waitKey(15) & 0xFF
-            if key_code == 27:
-                self.close()
-
-            key = chr(key_code).lower()
-            if key == "h":
-                print("Help:")
-                print("\tUse numbers to toggle through encodings (example: Colorizer = 0, Linear = 1, ...)")
-                print("\tUse 'b' to change the bit-depth")
-                print("\tUse 'esq' to close the application")
-
-            if key == "b":
-                if self.bit_depth == 8:
-                    self.bit_depth = 16
-                else:
-                    self.bit_depth = 8
-                print(f"Switched bit-depth to {self.bit_depth} bits.")
-
-            if key.isnumeric():
-                index = int(key)
-                encodings = list({item.name: item for item in list(DepthEncoding)}.values())
-
-                if index < len(encodings):
-                    self.encoding = encodings[index]
-                    print(f"Switch to {self.encoding} ({index})")
-
         self.fps_tracer.update()
         self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
 
