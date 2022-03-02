@@ -42,6 +42,25 @@ class MainWindow:
         self.display_16_bit = gui.Checkbox("Display 16bit")
         self.settings_panel.add_child(self.display_16_bit)
 
+        self.settings_panel.add_child(gui.Label("PCL Stride"))
+        self.pcl_stride = gui.Slider(gui.Slider.INT)
+        self.pcl_stride.set_limits(1, 10)
+        self.pcl_stride.int_value = 4
+        self.settings_panel.add_child(self.pcl_stride)
+
+        self.settings_panel.add_child(gui.Label("Point Size"))
+        self.point_size = gui.Slider(gui.Slider.INT)
+        self.point_size.set_limits(1, 10)
+        self.point_size.int_value = 2
+        self.settings_panel.add_child(self.point_size)
+
+        def on_point_size_changed(size):
+            if self.pipeline_view is None:
+                return
+            self.pipeline_view.pcd_material.point_size = int(size * self.window.scaling)
+
+        self.point_size.set_on_value_changed(on_point_size_changed)
+
         separation_height = int(round(0.5 * self.em))
 
         self.none_image = o3d.geometry.Image(np.zeros(shape=(1, 1, 3), dtype="uint8"))
@@ -83,8 +102,8 @@ class MainWindow:
             pcb_view_height = content_rect.height // 2
 
             self.pipeline_view.pcdview.frame = gui.Rect(content_rect.x, content_rect.y,
-                                         content_rect.width - self.settings_panel_width,
-                                         pcb_view_height)
+                                                        content_rect.width - self.settings_panel_width,
+                                                        pcb_view_height)
 
         self.rgb_widget.frame = gui.Rect(content_rect.x, pcb_view_height,
                                          content_rect.width - self.settings_panel_width,
@@ -129,8 +148,8 @@ class MainWindow:
         intrinsic_matrix = o3d.core.Tensor(
             self.pipeline.get_intrinsics(),
             dtype=o3d.core.Dtype.Float32)
-        depth_max = 6.0  # m
-        pcd_stride = 4  # downsample point cloud, may increase frame rate
+        depth_max = self.pipeline.max_distance  # m
+        pcd_stride = self.pcl_stride.int_value  # downsample point cloud, may increase frame rate
         flag_normals = False
         depth_scale = 1000
 
@@ -167,4 +186,5 @@ class MainWindow:
 
         def update():
             self.pipeline_view.update(frame_elements)
+
         gui.Application.instance.post_to_main_thread(self.pipeline_view.window, update)
