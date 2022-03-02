@@ -8,6 +8,11 @@ import cv2
 import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
+from simbi.model.DataField import DataField
+from simbi.ui.annotations.BooleanAnnotation import BooleanAnnotation
+from simbi.ui.annotations.TextAnnotation import TextAnnotation
+from simbi.ui.annotations.container.EndSectionAnnotation import EndSectionAnnotation
+from simbi.ui.annotations.container.StartSectionAnnotation import StartSectionAnnotation
 
 from spacestream.DepthEncoding import DepthEncoding
 from spacestream.fbs import FrameBufferSharingServer
@@ -38,6 +43,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.fps_tracer = vg.FPSTracer()
 
         self.depth_units: float = 0.001
+
+        # options
+        self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
+        self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
 
         self.encoding = encoding
         self.min_distance = min_distance
@@ -195,6 +204,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self.recorder.add_image(bgrd)
 
         self.fps_tracer.update()
+        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
 
         if self.on_frame_ready is not None:
             self.on_frame_ready(rgbd)

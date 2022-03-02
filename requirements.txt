@@ -1,8 +1,13 @@
+--find-links https://github.com/cansik/data-storage/releases/tag/packages
+
 # general imports
 configargparse
-visiongraph[realsense, azure, mediapipe, openvino, onnx]==0.1.17
+visiongraph[realsense, azure, mediapipe, openvino, onnx]>=0.1.17
 pyopengl
+
+# gui related
 open3d
+simbi[all]==0.1.0
 
 # macos
 syphonpy; platform_system == "Darwin"

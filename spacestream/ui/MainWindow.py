@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 import open3d as o3d
 from open3d.visualization import gui
+from simbi.ui.open3d.Open3dPropertyRegistry import init_open3d_registry
+from simbi.ui.open3d.PropertyPanel import PropertyPanel
 
 from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
 from spacestream.ui.PipelineView import PipelineView
@@ -15,8 +17,9 @@ from spacestream.ui.PipelineView import PipelineView
 class MainWindow:
     def __init__(self, pipeline: SpaceStreamPipeline, args):
         self.pipeline = pipeline
+        init_open3d_registry()
 
-        self.window: gui.Window = gui.Application.instance.create_window(pipeline.stream_name,
+        self.window: gui.Window = gui.Application.instance.create_window(f"Space Stream - {pipeline.stream_name}",
                                                                          round(1000),
                                                                          round(800))
         self.window.set_on_layout(self._on_layout)
@@ -25,7 +28,11 @@ class MainWindow:
         self.em = self.window.theme.font_size
         margin = 0.5 * self.em
 
+        # settings panel
         self.settings_panel_width = 18 * self.em  # 15 ems wide
+        self.settings_panel = PropertyPanel(0, gui.Margins(0.25 * self.em))
+        self.settings_panel.data_context = pipeline
+        self.window.add_child(self.settings_panel)
 
         separation_height = int(round(0.5 * self.em))
 
@@ -65,15 +72,19 @@ class MainWindow:
         pcb_view_height = 0
 
         if self.pipeline_view is not None:
-            pcb_view_height = content_rect.width // 2
+            pcb_view_height = content_rect.height // 2
 
             self.pipeline_view.pcdview.frame = gui.Rect(content_rect.x, content_rect.y,
-                                         content_rect.width,
+                                         content_rect.width - self.settings_panel_width,
                                          pcb_view_height)
 
         self.rgb_widget.frame = gui.Rect(content_rect.x, pcb_view_height,
-                                         content_rect.width,
+                                         content_rect.width - self.settings_panel_width,
                                          content_rect.height - pcb_view_height)
+
+        self.settings_panel.frame = gui.Rect(self.rgb_widget.frame.get_right(),
+                                             content_rect.y, self.settings_panel_width,
+                                             content_rect.height)
 
     def _on_close(self):
         self.pipeline.fbs_client.release()
@@ -111,7 +122,7 @@ class MainWindow:
             self.pipeline.get_intrinsics(),
             dtype=o3d.core.Dtype.Float32)
         depth_max = 6.0  # m
-        pcd_stride = 2  # downsample point cloud, may increase frame rate
+        pcd_stride = 4  # downsample point cloud, may increase frame rate
         flag_normals = False
         depth_scale = 1000
 
@@ -127,8 +138,6 @@ class MainWindow:
                                                                depth_scale, depth_max,
                                                                pcd_stride, flag_normals)
 
-        # o3d.t.io.write_point_cloud("test.ply", pcd)
-
         frame_elements = {
             'color': None,
             'depth': None,
@@ -138,5 +147,4 @@ class MainWindow:
 
         def update():
             self.pipeline_view.update(frame_elements)
-
         gui.Application.instance.post_to_main_thread(self.pipeline_view.window, update)
