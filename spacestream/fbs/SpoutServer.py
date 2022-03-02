@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Optional
 
 import SpoutGL
+import cv2
 import numpy as np
 from OpenGL import GL
 
@@ -19,9 +20,13 @@ class SpoutServer(FrameBufferSharingServer):
         self.ctx = SpoutGL.SpoutSender()
         self.ctx.setSenderName(self.name)
 
-    def send(self, frame: np.array):
+    def send(self, frame: np.array, send_alpha: bool = True):
         h, w = frame.shape[:2]
-        success = self.ctx.sendImage(frame, w, h, GL.GL_RGB, False, 0)
+
+        if send_alpha and frame.shape[2] < 4:
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2RGBA)
+
+        success = self.ctx.sendImage(frame, w, h, GL.GL_RGBA, False, 0)
 
         if not success:
             logging.warning("Could not send spout image.")
