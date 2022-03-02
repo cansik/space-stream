@@ -172,6 +172,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
                 depth_map = self.input.depth_map
             elif self.encoding.value == DepthEncoding.Linear:
                 depth_map = self.encode_depth_information(depth, linear_interpolate, self.bit_depth.value)
+            elif self.encoding.value == DepthEncoding.LinearRaw:
+                depth_map = self.encode_depth_raw_16bit(depth)
             elif self.encoding.value == DepthEncoding.Quad:
                 depth_map = self.encode_depth_information(depth, ease_out_quad, self.bit_depth.value)
             else:
@@ -216,6 +218,17 @@ class SpaceStreamPipeline(vg.BaseGraph):
         super()._release()
         if self.record and self.recorder is not None:
             self.recorder.close()
+
+    def encode_depth_raw_16bit(self, depth: np.ndarray):
+        depth = np.expand_dims(depth, axis=2).astype(np.uint16)
+
+        r_channel = depth // 256
+        g_channel = (depth >> 8) & 0xff
+        b_channel = depth & 0xff
+
+        out = np.concatenate((b_channel, g_channel, r_channel), axis=2)
+        return out.astype(np.uint8)
+
 
     def encode_depth_information(self, depth: np.ndarray,
                                  interpolation: Callable,

@@ -159,15 +159,15 @@ class MainWindow:
         if self.pipeline.bit_depth.value == 8:
             depth = (np.copy(frame[0:h, 0:w]) * 255).astype(np.uint16)
         else:
-            depth = np.copy(frame[0:h, 0:w])
+            depth = np.copy(frame[0:h, 0:w]).astype(np.uint16)
             if self.display_16_bit.checked:
                 # frame comes in as RGB (R=8bit depth, GB=16bit depth)
+                # currently only works fro raw stream
                 b = depth[:, :, 2]
                 g = depth[:, :, 1]
-                depth[:, :, 0] = g << 8 | b
+                depth[:, :, 0] = (g << 8 | b)
             else:
                 depth[:, :, 0] *= 255
-            depth = depth.astype(np.uint16)
 
         color_frame = o3d.t.geometry.Image(color)
         depth_frame = o3d.t.geometry.Image(depth)
