@@ -115,8 +115,11 @@ class PipelineView:
         self.pcdview.scene.camera.look_at([0, 0, 1], [0, 0, 0], [0, -1, 0])
         cam: o3d.visualization.rendering.Camera = self.pcdview.scene.camera
 
+        # todo: set near plane
         # field_of_view, aspect_ratio, far_plane, field_of_view_type
         # cam.set_projection(60.0, 4.0 / 3.0, 0.0001, rendering.Camera.Perspective)
+
+        # cam.set_projection(rendering.Camera.Perspective, 100, 100, 100, 100, 0.00001, 10.0)
 
         print(f"Near: {cam.get_near()}")
         print(f"Far: {cam.get_far()}")

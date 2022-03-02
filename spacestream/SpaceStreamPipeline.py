@@ -9,7 +9,10 @@ import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
 from simbi.model.DataField import DataField
+from simbi.ui.annotations import NumberAnnotation
 from simbi.ui.annotations.BooleanAnnotation import BooleanAnnotation
+from simbi.ui.annotations.EnumAnnotation import EnumAnnotation
+from simbi.ui.annotations.OptionsAnnotation import OptionsAnnotation
 from simbi.ui.annotations.TextAnnotation import TextAnnotation
 from simbi.ui.annotations.container.EndSectionAnnotation import EndSectionAnnotation
 from simbi.ui.annotations.container.StartSectionAnnotation import StartSectionAnnotation
@@ -48,10 +51,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
         self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
 
-        self.encoding = encoding
+        self.encoding = DataField(encoding) | EnumAnnotation("Encoding")
         self.min_distance = min_distance
         self.max_distance = max_distance
-        self.bit_depth = bit_depth
+        self.bit_depth = DataField(bit_depth) | OptionsAnnotation("Bit Depth", [8, 16])
 
         self.record = record
         self.recorder: Optional[vg.CV2VideoRecorder] = None
@@ -168,12 +171,12 @@ class SpaceStreamPipeline(vg.BaseGraph):
                 depth = pow(2, 16) - depth
 
             # read depth map and create rgb-d
-            if self.encoding == DepthEncoding.Colorizer:
+            if self.encoding.value == DepthEncoding.Colorizer:
                 depth_map = self.input.depth_map
-            elif self.encoding == DepthEncoding.Linear:
-                depth_map = self.encode_depth_information(depth, linear_interpolate, self.bit_depth)
-            elif self.encoding == DepthEncoding.Quad:
-                depth_map = self.encode_depth_information(depth, ease_out_quad, self.bit_depth)
+            elif self.encoding.value == DepthEncoding.Linear:
+                depth_map = self.encode_depth_information(depth, linear_interpolate, self.bit_depth.value)
+            elif self.encoding.value == DepthEncoding.Quad:
+                depth_map = self.encode_depth_information(depth, ease_out_quad, self.bit_depth.value)
             else:
                 raise Exception("No encoding method is set!")
 
@@ -206,7 +209,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.fps_tracer.update()
         self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
 
-        if self.on_frame_ready is not None:
+        if not self.disable_preview.value and self.on_frame_ready is not None:
             self.on_frame_ready(rgbd)
 
         # imshow does only work in main thread!
