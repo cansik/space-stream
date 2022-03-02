@@ -34,6 +34,11 @@ class MainWindow:
         self.settings_panel.data_context = pipeline
         self.window.add_child(self.settings_panel)
 
+        self.settings_panel.add_child(gui.Label("View Parameter"))
+        self.render_3d_view = gui.Checkbox("Render 3D")
+        self.render_3d_view.checked = True
+        self.settings_panel.add_child(self.render_3d_view)
+
         self.display_16_bit = gui.Checkbox("Display 16bit")
         self.settings_panel.add_child(self.display_16_bit)
 
@@ -101,7 +106,7 @@ class MainWindow:
         h, tw = bgrd.shape[:2]
         w = tw // 2
 
-        if self.pipeline_view is not None:
+        if self.pipeline_view is not None and self.render_3d_view.checked:
             self.pipeline_view.max_pcd_vertices = h * w
             self.create_3d_cloud(bgrd)
 
