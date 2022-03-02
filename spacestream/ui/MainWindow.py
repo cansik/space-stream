@@ -34,6 +34,9 @@ class MainWindow:
         self.settings_panel.data_context = pipeline
         self.window.add_child(self.settings_panel)
 
+        self.display_16_bit = gui.Checkbox("Display 16bit")
+        self.settings_panel.add_child(self.display_16_bit)
+
         separation_height = int(round(0.5 * self.em))
 
         self.none_image = o3d.geometry.Image(np.zeros(shape=(1, 1, 3), dtype="uint8"))
@@ -126,9 +129,21 @@ class MainWindow:
         flag_normals = False
         depth_scale = 1000
 
-        # split image
-        depth = (np.copy(frame[0:h, 0:w]) * 255).astype(np.uint16)
+        # split image / and visualise
         color = np.copy(frame[0:h, w:w + w])
+
+        if self.pipeline.bit_depth.value == 8:
+            depth = (np.copy(frame[0:h, 0:w]) * 255).astype(np.uint16)
+        else:
+            depth = np.copy(frame[0:h, 0:w])
+            if self.display_16_bit.checked:
+                # frame comes in as RGB (R=8bit depth, GB=16bit depth)
+                b = depth[:, :, 2]
+                g = depth[:, :, 1]
+                depth[:, :, 0] = g << 8 | b
+            else:
+                depth[:, :, 0] *= 255
+            depth = depth.astype(np.uint16)
 
         color_frame = o3d.t.geometry.Image(color)
         depth_frame = o3d.t.geometry.Image(depth)
