@@ -12,7 +12,7 @@ uv_pipe: Optional[BufferedWriter] = None
 
 def on_frame_ready(frame: np.ndarray):
     # pipe frame
-    _, encoded = cv2.imencode('.png', frame)
+    _, encoded = cv2.imencode('.bmp', frame)
 
     if uv_pipe is not None:
         uv_pipe.write(encoded.tobytes())
