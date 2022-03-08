@@ -11,6 +11,7 @@ from simbi.ui.open3d.Open3dPropertyRegistry import init_open3d_registry
 from simbi.ui.open3d.PropertyPanel import PropertyPanel
 
 from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
+from spacestream.codec.LinearCodec import LinearCodec
 from spacestream.ui.PipelineView import PipelineView
 
 
@@ -40,6 +41,7 @@ class MainWindow:
         self.settings_panel.add_child(self.render_3d_view)
 
         self.display_16_bit = gui.Checkbox("Display 16bit")
+        self.display_16_bit.checked = True
         self.settings_panel.add_child(self.display_16_bit)
 
         self.settings_panel.add_child(gui.Label("PCL Stride"))
@@ -160,7 +162,12 @@ class MainWindow:
         # decode
         min_value = round(self.pipeline.min_distance / self.pipeline.depth_units)
         max_value = round(self.pipeline.max_distance / self.pipeline.depth_units)
-        depth = self.pipeline.depth_codec.decode(depth, min_value, max_value)
+
+        if isinstance(self.pipeline.depth_codec, LinearCodec):
+            depth = self.pipeline.depth_codec.decode(depth, min_value, max_value,
+                                                     decode_8bit=not self.display_16_bit.checked)
+        else:
+            depth = self.pipeline.depth_codec.decode(depth, min_value, max_value)
 
         depth = cv2.cvtColor(depth, cv2.COLOR_GRAY2RGB)
 
