@@ -4,7 +4,7 @@ from numba import njit, prange
 from spacestream.codec import ENABLE_FAST_MATH, ENABLE_PARALLEL
 from spacestream.codec.DepthCodec import DepthCodec
 
-INDEPENDENT_VALUES = 1529
+INDEPENDENT_VALUES = pow(2, 16) - 1
 
 
 class LinearCodec(DepthCodec):
@@ -19,7 +19,6 @@ class LinearCodec(DepthCodec):
         h, w = depth.shape[:2]
 
         d_value = d_max - d_min
-        total_unique_values = pow(2, 16) - 1
 
         for i in prange(w * h):
             x = i % w
@@ -33,8 +32,8 @@ class LinearCodec(DepthCodec):
 
             d = min(max(d, d_min), d_max)
 
-            d = (d - d_min) * total_unique_values
-            d = total_unique_values - d
+            d = (d - d_min) * INDEPENDENT_VALUES
+            d = INDEPENDENT_VALUES - d
             d = int(d / d_value)
 
             # bgr output encoding
@@ -45,7 +44,9 @@ class LinearCodec(DepthCodec):
     def decode(self, depth: np.ndarray, d_min: float, d_max: float, decode_8bit: bool = False) -> np.ndarray:
         self.prepare_decode_buffer(depth)
 
-        # todo: currently does not encode correctly, implemented correct scaling
+        # create uint16 from depth
+        depth = depth.astype(np.uint16)
+
         # frame comes in as RGB (R=8bit depth, GB=16bit depth)
         if decode_8bit:
             self.decode_buffer[:, :] = depth[:, :, 0] * 255
@@ -53,5 +54,9 @@ class LinearCodec(DepthCodec):
             b = depth[:, :, 2]
             g = depth[:, :, 1]
             self.decode_buffer[:, :] = (g << 8 | b)
+
+        # stretch buffer
+        norm_depth = 1.0 - (self.decode_buffer.astype(np.float) / INDEPENDENT_VALUES)
+        self.decode_buffer[:, :] = ((d_max * norm_depth) + d_min).astype(np.uint16)
 
         return self.decode_buffer
