@@ -42,5 +42,16 @@ class LinearCodec(DepthCodec):
             result[y, x, 1] = (d >> 8) & 0xFF
             result[y, x, 0] = d & 0xFF
 
-    def decode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
-        return depth
+    def decode(self, depth: np.ndarray, d_min: float, d_max: float, decode_8bit: bool = False) -> np.ndarray:
+        self.prepare_decode_buffer(depth)
+
+        # todo: currently does not encode correctly, implemented correct scaling
+        # frame comes in as RGB (R=8bit depth, GB=16bit depth)
+        if decode_8bit:
+            self.decode_buffer[:, :] = depth[:, :, 0] * 255
+        else:
+            b = depth[:, :, 2]
+            g = depth[:, :, 1]
+            self.decode_buffer[:, :] = (g << 8 | b)
+
+        return self.decode_buffer

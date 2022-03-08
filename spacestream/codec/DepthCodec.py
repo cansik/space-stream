@@ -20,7 +20,7 @@ class DepthCodec(ABC):
         h, w = frame.shape[:2]
         if not isinstance(self.decode_buffer, np.ndarray) \
                 or h != self.decode_buffer.shape[0] or w != self.decode_buffer.shape[1]:
-            self.decode_buffer = np.zeros(shape=(h, w, 3), dtype=np.uint8)
+            self.decode_buffer = np.zeros(shape=(h, w), dtype=np.uint16)
 
     @abstractmethod
     def encode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
