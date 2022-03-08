@@ -132,4 +132,5 @@ dmypy.json
 .idea
 *.bag
 recordings/**/*.mp4
+recordings/**/*.mov
 config/**/*.ini

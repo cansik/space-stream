@@ -15,6 +15,7 @@ from simbi.ui.annotations.OptionsAnnotation import OptionsAnnotation
 from simbi.ui.annotations.TextAnnotation import TextAnnotation
 
 from spacestream.DepthEncoding import DepthEncoding
+from spacestream.codec.UniformHueColorization import UniformHueColorization
 from spacestream.fbs import FrameBufferSharingServer
 
 
@@ -60,6 +61,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.masking = masking
         self.segmentation_network: Optional[vg.InstanceSegmentationEstimator] = None
+
+        self.depth_codec = UniformHueColorization()
 
         if self.masking:
             self.segmentation_network = segnet
@@ -176,6 +179,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
                 depth_map = self.encode_depth_raw_16bit(depth)
             elif self.encoding.value == DepthEncoding.Quad:
                 depth_map = self.encode_depth_information(depth, ease_out_quad, self.bit_depth.value)
+            elif self.encoding.value == DepthEncoding.UniformHue:
+                depth_map = self.depth_codec.encode(depth, self.min_distance, self.max_distance)
             else:
                 raise Exception("No encoding method is set!")
 
