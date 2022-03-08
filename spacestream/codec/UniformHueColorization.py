@@ -71,4 +71,34 @@ class UniformHueColorization(DepthCodec):
 
     def decode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
         super().prepare_decode_buffer(depth)
-        return depth
+        self._pdecode(depth.astype(np.uint16), self.decode_buffer, d_min, d_max)
+        return self.decode_buffer
+
+    @staticmethod
+    @njit(parallel=ENABLE_PARALLEL, fastmath=ENABLE_FAST_MATH)
+    def _pdecode(depth: np.ndarray, result: np.ndarray, d_min: float, d_max: float):
+        h, w = depth.shape[:2]
+
+        for i in prange(w * h):
+            x = i % w
+            y = i // w
+
+            r, g, b = depth[y, x]
+
+            r = int(r)
+            g = int(g)
+            b = int(b)
+
+            d_norm = 0
+
+            if r >= g and r >= b and g >= b:
+                d_norm = g - b
+            elif r >= g and r >= b and g < b:
+                d_norm = g - b + 1529
+            elif g >= r and g >= b:
+                d_norm = b - r + 510
+            elif b >= g and b >= r:
+                d_norm = r - g + 1020
+
+            d_recovery = d_min + (((d_max - d_min) * d_norm) / INDEPENDENT_VALUES)
+            result[y, x] = d_recovery

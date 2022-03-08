@@ -155,19 +155,14 @@ class MainWindow:
 
         # split image / and visualise
         color = np.copy(frame[0:h, w:w + w])
+        depth = np.copy(frame[0:h, 0:w])
 
-        if self.pipeline.bit_depth.value == 8:
-            depth = (np.copy(frame[0:h, 0:w]) * 255).astype(np.uint16)
-        else:
-            depth = np.copy(frame[0:h, 0:w]).astype(np.uint16)
-            if self.display_16_bit.checked:
-                # frame comes in as RGB (R=8bit depth, GB=16bit depth)
-                # currently only works fro raw stream
-                b = depth[:, :, 2]
-                g = depth[:, :, 1]
-                depth[:, :, 0] = (g << 8 | b)
-            else:
-                depth[:, :, 0] *= 255
+        # decode
+        min_value = round(self.pipeline.min_distance / self.pipeline.depth_units)
+        max_value = round(self.pipeline.max_distance / self.pipeline.depth_units)
+        depth = self.pipeline.depth_codec.decode(depth, min_value, max_value)
+
+        depth = cv2.cvtColor(depth, cv2.COLOR_GRAY2RGB)
 
         color_frame = o3d.t.geometry.Image(color)
         depth_frame = o3d.t.geometry.Image(depth)

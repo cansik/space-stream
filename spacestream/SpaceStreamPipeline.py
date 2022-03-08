@@ -13,6 +13,7 @@ from simbi.ui.annotations.BooleanAnnotation import BooleanAnnotation
 from simbi.ui.annotations.EnumAnnotation import EnumAnnotation
 from simbi.ui.annotations.TextAnnotation import TextAnnotation
 
+from spacestream.codec.DepthCodec import DepthCodec
 from spacestream.codec.DepthCodecType import DepthCodecType
 from spacestream.codec.UniformHueColorization import UniformHueColorization
 from spacestream.fbs import FrameBufferSharingServer
@@ -48,7 +49,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
         self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
 
-        self.depth_codec = codec.value()
+        self.depth_codec: DepthCodec = codec.value()
         self.codec = DataField(codec) | EnumAnnotation("Codec")
         self.min_distance = min_distance
         self.max_distance = max_distance
