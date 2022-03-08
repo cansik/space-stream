@@ -25,28 +25,18 @@ To use the Azure Kinect use the `azure` input type:
 python -m spacestream --input azure
 ```
 
-#### Depth Encoding
-By default the depthmap is encoded by the realsense colorizer. It is possible to change the behaviour to use a specific encoding method. Be aware that some functions have an impact on performance because of the power calculation. Here is a list of all available:
+#### Depth Codec
+By default the depthmap is encoded by the linear codec. It is possible to change the behaviour to use a specific encoding method. Be aware that some functions have an impact on performance. Here is a list of all available codecs:
 
 ```
-Colorizer, Linear, Quad
+Linear,
+UniformHue
 ```
 
-To convert the `Quad` encoding back it is possible to use `1-sqrt(x)`.
-
-And it is possible to set the specific encoding by using the `--depth-encoding` parameter or by using the number keys on the viewer (0 = Colorizer, 1 = Linear, ..).
-
-```
-python -m spacestream --input realsense --depth-encoding Quad
-```
+The codec `UniformHue` is implemented according to the Intel whitepaper about [Depth image compression by colorization](https://dev.intelrealsense.com/docs/depth-image-compression-by-colorization-for-intel-realsense-depth-cameras).
 
 #### Bit Depth
-By default the bit depth is 8bit, but it is also possible to change it to a 16 bit encoding where two color channels (blue, green) are used. Green for the most significant bits and blue for the least significant bits (little-endian).
-To change the bit-depth use the parameter `--bit-depth` or the keyboard key `b` in the viewer:
-
-```
-python -m spacestream --input realsense --depth-encoding Quad --bit-depth 16
-```
+The encoded bit-depth depends on the codec used. For `Linear` codec there are two different bit-depths encoded. First the `8-bit` encoding in the `red` channel and `16-bit` encoded values in the `green` (MSB) and `blue` (LSB) channel.
 
 #### Distance Range
 To define the min and max distance to encode, use the `--min-distance` and `--max-distance` parameter.
@@ -56,9 +46,6 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 ```
 usage: spacestream [-h] [-c CONFIG]
                    [--loglevel {critical,error,warning,info,debug}]
-                   [--depth-encoding Colorizer,Linear,Quad]
-                   [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
-                   [--bit-depth {8,16}] [--stream-name STREAM_NAME]
                    [--input video-capture,image,realsense]
                    [--input-size width height] [--input-fps INPUT_FPS]
                    [--input-rotate 90,-90,180] [--input-flip h,v]
@@ -73,9 +60,12 @@ usage: spacestream [-h] [-c CONFIG]
                    [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
                    [--midas] [--mask]
                    [--segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800]
-                   [--no-filter] [--no-preview] [--record]
+                   [--codec Linear,UniformHue] [--min-distance MIN_DISTANCE]
+                   [--max-distance MAX_DISTANCE] [--fastmath]
+                   [--stream-name STREAM_NAME] [--no-filter] [--no-preview]
+                   [--record] [--view-pcd]
 
-RGB-D framebuffer sharing demo for visiongraph
+RGB-D framebuffer sharing demo for visiongraph.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -84,18 +74,6 @@ optional arguments:
   --loglevel {critical,error,warning,info,debug}
                         Provide logging level. Example --loglevel debug,
                         default=warning
-  --depth-encoding Colorizer,Linear,Quad
-                        Method how the depth map will be encoded, default:
-                        Colorizer.
-  --min-distance MIN_DISTANCE
-                        Min distance to perceive by the camera.
-  --max-distance MAX_DISTANCE
-                        Max distance to perceive by the camera.
-  --bit-depth {8,16}    Encoding output bit depth (default: 8).
-  --stream-name STREAM_NAME
-                        Spout / Syphon stream name.
-  --segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800
-                        Segmentation Network, default: mediapipe.
 
 input provider:
   --input video-capture,image,realsense
@@ -142,11 +120,28 @@ input provider:
 
 masking:
   --mask                Apply mask by segmentation algorithm.
+  --segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800
+                        Segmentation Network, default: mediapipe.
+
+depth codec:
+  --codec Linear,UniformHue
+                        Codec how the depth map will be encoded., default:
+                        Linear.
+  --min-distance MIN_DISTANCE
+                        Min distance to perceive by the camera.
+  --max-distance MAX_DISTANCE
+                        Max distance to perceive by the camera.
+  --fastmath            Enable fastmath for codec operations.
+
+output:
+  --stream-name STREAM_NAME
+                        Spout / Syphon stream name.
 
 debug:
   --no-filter           Disable realsense image filter.
   --no-preview          Disable preview to speed.
   --record              Record output into recordings folder.
+  --view-pcd            Display PCB preview.
 ```
 
 ### About
