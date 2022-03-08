@@ -14,7 +14,7 @@ from simbi.ui.annotations.EnumAnnotation import EnumAnnotation
 from simbi.ui.annotations.OptionsAnnotation import OptionsAnnotation
 from simbi.ui.annotations.TextAnnotation import TextAnnotation
 
-from spacestream.DepthEncoding import DepthEncoding
+from spacestream.codec.DepthCodecType import DepthCodecType
 from spacestream.codec.UniformHueColorization import UniformHueColorization
 from spacestream.fbs import FrameBufferSharingServer
 
@@ -31,8 +31,8 @@ def ease_out_quad(x):
 class SpaceStreamPipeline(vg.BaseGraph):
 
     def __init__(self, stream_name: str, input: vg.BaseInput, fbs_client: FrameBufferSharingServer,
-                 encoding: DepthEncoding = DepthEncoding.Colorizer,
-                 min_distance: float = 0, max_distance: float = 6, bit_depth: int = 8,
+                 codec: DepthCodecType = DepthCodecType.Linear,
+                 min_distance: float = 0, max_distance: float = 6,
                  record: bool = False, masking: bool = False,
                  segnet: Optional[vg.InstanceSegmentationEstimator] = None, use_midas: bool = False,
                  multi_threaded: bool = False, handle_signals: bool = True):
@@ -49,10 +49,9 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
         self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
 
-        self.encoding = DataField(encoding) | EnumAnnotation("Encoding")
+        self.codec = DataField(codec) | EnumAnnotation("Codec")
         self.min_distance = min_distance
         self.max_distance = max_distance
-        self.bit_depth = DataField(bit_depth) | OptionsAnnotation("Bit Depth", [8, 16])
 
         self.record = record
         self.recorder: Optional[vg.CV2VideoRecorder] = None
@@ -170,19 +169,11 @@ class SpaceStreamPipeline(vg.BaseGraph):
             if self.use_midas:
                 depth = pow(2, 16) - depth
 
-            # read depth map and create rgb-d
-            if self.encoding.value == DepthEncoding.Colorizer:
-                depth_map = self.input.depth_map
-            elif self.encoding.value == DepthEncoding.Linear:
-                depth_map = self.encode_depth_information(depth, linear_interpolate, self.bit_depth.value)
-            elif self.encoding.value == DepthEncoding.LinearRaw:
-                depth_map = self.encode_depth_raw_16bit(depth)
-            elif self.encoding.value == DepthEncoding.Quad:
-                depth_map = self.encode_depth_information(depth, ease_out_quad, self.bit_depth.value)
-            elif self.encoding.value == DepthEncoding.UniformHue:
-                depth_map = self.depth_codec.encode(depth, self.min_distance, self.max_distance)
-            else:
-                raise Exception("No encoding method is set!")
+            # read depth map and create rgb-d image
+
+            min_value = round(self.min_distance / self.depth_units)
+            max_value = round(self.max_distance / self.depth_units)
+            depth_map = self.depth_codec.encode(depth, min_value, max_value)
 
             # fix realsense image if it has been aligned to remove lines
             if isinstance(self.input, vg.RealSenseInput):
@@ -223,56 +214,6 @@ class SpaceStreamPipeline(vg.BaseGraph):
         super()._release()
         if self.record and self.recorder is not None:
             self.recorder.close()
-
-    def encode_depth_raw_16bit(self, depth: np.ndarray):
-        depth = np.expand_dims(depth, axis=2).astype(np.uint16)
-
-        r_channel = depth // 256
-        g_channel = (depth >> 8) & 0xff
-        b_channel = depth & 0xff
-
-        out = np.concatenate((b_channel, g_channel, r_channel), axis=2)
-        return out.astype(np.uint8)
-
-
-    def encode_depth_information(self, depth: np.ndarray,
-                                 interpolation: Callable,
-                                 bit_depth: int) -> np.ndarray:
-        # prepare information
-        min_value = round(self.min_distance / self.depth_units)
-        max_value = round(self.max_distance / self.depth_units)
-        d_value = max_value - min_value
-        total_unique_values = pow(2, bit_depth) - 1
-
-        # read depth, clip, normalize and map
-        depth[depth == 0] = max_value  # set 0 (no-data points) to max value
-        depth = np.clip(depth, min_value, max_value)
-
-        depth = (depth - min_value) * total_unique_values
-        depth = total_unique_values - depth
-        depth = (depth / d_value).astype(np.uint16)
-
-        # depth = (depth - min_value) / d_value  # normalize
-
-        # depth = interpolation(depth)
-        # depth = 1.0 - depth  # flip
-
-        # convert to new bit range
-        # depth = (depth * total_unique_values).astype(np.uint16)
-
-        # map to RGB image (8 or 16 bit)
-        if bit_depth == 8:
-            return cv2.cvtColor(depth.astype(np.uint8), cv2.COLOR_GRAY2RGB)
-
-        # bit depth 16 bit
-        out = np.expand_dims(depth, axis=2)
-
-        r_channel = out / 256
-        g_channel = (out >> 8) & 0xff
-        b_channel = out & 0xff
-
-        out = np.concatenate((b_channel, g_channel, r_channel), axis=2)
-        return out.astype(np.uint8)
 
     @staticmethod
     def mask_image(image: np.ndarray, mask: np.ndarray) -> np.ndarray:

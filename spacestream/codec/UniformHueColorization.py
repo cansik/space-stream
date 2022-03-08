@@ -1,21 +1,27 @@
 import numpy as np
 from numba import njit, prange
 
+from spacestream.codec import ENABLE_FAST_MATH, ENABLE_PARALLEL
 from spacestream.codec.DepthCodec import DepthCodec
 
 INDEPENDENT_VALUES = 1529
 
 
 class UniformHueColorization(DepthCodec):
+    """
+    This codec implements the intel white paper Uniform Hue Colorization:
+    https://dev.intelrealsense.com/docs/depth-image-compression-by-colorization-for-intel-realsense-depth-cameras
+    """
+
     def encode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
-        result = self._pencode(depth, d_min * 1000, d_max * 1000)
-        return result
+        super().prepare_encode_buffer(depth)
+        self._pencode(depth, self.encode_buffer, d_min, d_max)
+        return self.encode_buffer
 
     @staticmethod
-    @njit(parallel=True)
-    def _pencode(depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
+    @njit(parallel=ENABLE_PARALLEL, fastmath=ENABLE_FAST_MATH)
+    def _pencode(depth: np.ndarray, result: np.ndarray, d_min: float, d_max: float):
         h, w = depth.shape[:2]
-        result = np.zeros(shape=(h, w, 3), dtype=np.uint8)
 
         for i in prange(w * h):
             x = i % w
@@ -63,7 +69,6 @@ class UniformHueColorization(DepthCodec):
             result[y, x, 1] = g
             result[y, x, 2] = r
 
-        return result
-
     def decode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
+        super().prepare_decode_buffer(depth)
         return depth

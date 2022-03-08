@@ -4,7 +4,8 @@ from functools import partial
 import configargparse
 from visiongraph.input import add_input_step_choices
 
-from spacestream.DepthEncoding import DepthEncoding
+from spacestream import codec
+from spacestream.codec.DepthCodecType import DepthCodecType
 from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
 from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 from spacestream.ui.MainWindow import MainWindow
@@ -28,16 +29,9 @@ segmentation_networks = {
 
 def parse_args():
     parser = configargparse.ArgumentParser(prog="spacestream",
-                                           description="RGB-D framebuffer sharing demo for visiongraph")
+                                           description="RGB-D framebuffer sharing demo for visiongraph.")
     parser.add_argument("-c", "--config", required=False, is_config_file=True, help="Configuration file path.")
     vg.add_logging_parameter(parser)
-    vg.add_enum_choice_argument(parser, DepthEncoding, "--depth-encoding",
-                                help="Method how the depth map will be encoded")
-    parser.add_argument("--min-distance", type=float, default=0, help="Min distance to perceive by the camera.")
-    parser.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
-    parser.add_argument("--bit-depth", type=int, default=8, choices=[8, 16],
-                        help="Encoding output bit depth (default: 8).")
-    parser.add_argument("--stream-name", type=str, default="RGBDStream", help="Spout / Syphon stream name.")
 
     input_group = parser.add_argument_group("input provider")
     add_input_step_choices(input_group)
@@ -47,6 +41,15 @@ def parse_args():
     masking_group.add_argument("--mask", action="store_true", help="Apply mask by segmentation algorithm.")
     vg.add_step_choice_argument(masking_group, segmentation_networks, name="--segnet", default="mediapipe",
                                 help="Segmentation Network", add_params=False)
+
+    depth_group = parser.add_argument_group("depth codec")
+    vg.add_enum_choice_argument(depth_group, DepthCodecType, "--codec", help="Codec how the depth map will be encoded.")
+    depth_group.add_argument("--min-distance", type=float, default=0, help="Min distance to perceive by the camera.")
+    depth_group.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
+    depth_group.add_argument("--fastmath", action="store_true", help="Enable fastmath for codec operations.")
+
+    output_group = parser.add_argument_group("output")
+    output_group.add_argument("--stream-name", type=str, default="RGBDStream", help="Spout / Syphon stream name.")
 
     debug_group = parser.add_argument_group("debug")
     debug_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
@@ -60,6 +63,9 @@ def parse_args():
 def main():
     args = parse_args()
     vg.setup_logging(args.loglevel)
+
+    if args.fastmath:
+        codec.ENABLE_FAST_MATH = True
 
     if issubclass(args.input, vg.BaseDepthInput):
         args.depth = True
@@ -81,8 +87,8 @@ def main():
     show_ui = not args.no_preview
 
     # run pipeline
-    pipeline = SpaceStreamPipeline(args.stream_name, args.input(), fbs_client, args.depth_encoding,
-                                   args.min_distance, args.max_distance, args.bit_depth,
+    pipeline = SpaceStreamPipeline(args.stream_name, args.input(), fbs_client, args.codec,
+                                   args.min_distance, args.max_distance,
                                    args.record, args.mask, args.segnet(), args.midas,
                                    multi_threaded=show_ui, handle_signals=not show_ui)
     pipeline.configure(args)
