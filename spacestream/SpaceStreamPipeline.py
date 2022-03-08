@@ -11,7 +11,6 @@ import visiongraph as vg
 from simbi.model.DataField import DataField
 from simbi.ui.annotations.BooleanAnnotation import BooleanAnnotation
 from simbi.ui.annotations.EnumAnnotation import EnumAnnotation
-from simbi.ui.annotations.OptionsAnnotation import OptionsAnnotation
 from simbi.ui.annotations.TextAnnotation import TextAnnotation
 
 from spacestream.codec.DepthCodecType import DepthCodecType
@@ -49,9 +48,14 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
         self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
 
+        self.depth_codec = codec.value()
         self.codec = DataField(codec) | EnumAnnotation("Codec")
         self.min_distance = min_distance
         self.max_distance = max_distance
+
+        def codec_changed(c):
+            self.depth_codec = c.value()
+        self.codec.on_changed += codec_changed
 
         self.record = record
         self.recorder: Optional[vg.CV2VideoRecorder] = None
@@ -60,8 +64,6 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.masking = masking
         self.segmentation_network: Optional[vg.InstanceSegmentationEstimator] = None
-
-        self.depth_codec = UniformHueColorization()
 
         if self.masking:
             self.segmentation_network = segnet

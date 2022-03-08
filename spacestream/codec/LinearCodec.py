@@ -37,9 +37,10 @@ class LinearCodec(DepthCodec):
             d = total_unique_values - d
             d = int(d / d_value)
 
-            result[y, x, 0] = d // 256 & 0xFF
+            # bgr output encoding
+            result[y, x, 2] = d // 256 & 0xFF
             result[y, x, 1] = (d >> 8) & 0xFF
-            result[y, x, 2] = d & 0xFF
+            result[y, x, 0] = d & 0xFF
 
     def decode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
         return depth

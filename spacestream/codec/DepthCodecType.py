@@ -5,5 +5,5 @@ from spacestream.codec.UniformHueColorization import UniformHueColorization
 
 
 class DepthCodecType(Enum):
-    Linear = LinearCodec()
-    UniformHue = UniformHueColorization()
+    Linear = LinearCodec
+    UniformHue = UniformHueColorization
