@@ -19,11 +19,16 @@ class UniformHueColorization(DepthCodec):
 
     def encode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
         super().prepare_encode_buffer(depth)
+
+        # check divide by zero
+        if self.inverse_transform and (d_min == 0 or d_max == 0):
+            raise Exception(f"Hue Codec: d_min ({d_min}) and d_max ({d_max}) are not allowed to be 0.")
+
         self._pencode(depth, self.encode_buffer, d_min, d_max, self.inverse_transform)
         return self.encode_buffer
 
     @staticmethod
-    # @njit(parallel=ENABLE_PARALLEL, fastmath=ENABLE_FAST_MATH)
+    @njit(parallel=ENABLE_PARALLEL, fastmath=ENABLE_FAST_MATH)
     def _pencode(depth: np.ndarray, result: np.ndarray, d_min: float, d_max: float, inverse_transform: bool):
         h, w = depth.shape[:2]
 
@@ -42,10 +47,10 @@ class UniformHueColorization(DepthCodec):
                     d_norm = 0
                 else:
                     disp = 1 / d
-                    disp_max = 1 / d_min if d_min > 0 else 0
+                    disp_max = 1 / d_min
                     disp_min = 1 / d_max
 
-                    d_norm = (disp - disp_min) / (disp_max - disp_min)
+                    d_norm = (disp - disp_min) / (disp_max - disp_min) * INDEPENDENT_VALUES
             else:
                 d_norm = round(((d - d_min) / (d_max - d_min)) * INDEPENDENT_VALUES)
 
