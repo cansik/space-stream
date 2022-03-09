@@ -14,6 +14,8 @@ from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
 from spacestream.codec.LinearCodec import LinearCodec
 from spacestream.ui.PipelineView import PipelineView
 
+import visiongraph as vg
+
 
 class MainWindow:
     def __init__(self, pipeline: SpaceStreamPipeline, args):
@@ -43,6 +45,10 @@ class MainWindow:
         self.display_16_bit = gui.Checkbox("Display 16bit")
         self.display_16_bit.checked = True
         self.settings_panel.add_child(self.display_16_bit)
+
+        self.display_depth_map = gui.Checkbox("Display Depth Map")
+        self.display_depth_map.checked = False
+        self.settings_panel.add_child(self.display_depth_map)
 
         self.settings_panel.add_child(gui.Label("PCL Stride"))
         self.pcl_stride = gui.Slider(gui.Slider.INT)
@@ -122,7 +128,13 @@ class MainWindow:
 
     def on_frame_ready(self, frame: np.ndarray):
         bgrd = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        image = o3d.geometry.Image(bgrd)
+        preview_image = bgrd
+
+        if self.display_depth_map.checked:
+            if isinstance(self.pipeline.input, vg.DepthBuffer):
+                preview_image = self.pipeline.input.depth_map
+
+        image = o3d.geometry.Image(preview_image)
 
         h, tw = bgrd.shape[:2]
         w = tw // 2
