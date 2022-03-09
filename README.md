@@ -61,9 +61,9 @@ usage: spacestream [-h] [-c CONFIG]
                    [--midas] [--mask]
                    [--segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800]
                    [--codec Linear,UniformHue] [--min-distance MIN_DISTANCE]
-                   [--max-distance MAX_DISTANCE] [--fastmath]
-                   [--stream-name STREAM_NAME] [--no-filter] [--no-preview]
-                   [--record] [--view-pcd]
+                   [--max-distance MAX_DISTANCE] [--no-parallel]
+                   [--no-fastmath] [--stream-name STREAM_NAME] [--no-filter]
+                   [--no-preview] [--record] [--view-pcd]
 
 RGB-D framebuffer sharing demo for visiongraph.
 
@@ -131,7 +131,10 @@ depth codec:
                         Min distance to perceive by the camera.
   --max-distance MAX_DISTANCE
                         Max distance to perceive by the camera.
-  --fastmath            Enable fastmath for codec operations.
+
+performance:
+  --no-parallel         Disable parallel for codec operations.
+  --no-fastmath         Disable fastmath for codec operations.
 
 output:
   --stream-name STREAM_NAME
