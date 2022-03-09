@@ -60,7 +60,7 @@ class UniformHueColorization(DepthCodec):
                 b = 0
             elif 765 < d_norm <= 1020:
                 b = d_norm - 765
-            elif 1024 < d_norm <= 1275:
+            elif 1020 < d_norm <= 1275:
                 b = 255
             elif 1275 < d_norm <= 1529:
                 b = 1275 - d_norm
