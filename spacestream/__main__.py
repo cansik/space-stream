@@ -46,7 +46,10 @@ def parse_args():
     vg.add_enum_choice_argument(depth_group, DepthCodecType, "--codec", help="Codec how the depth map will be encoded.")
     depth_group.add_argument("--min-distance", type=float, default=0, help="Min distance to perceive by the camera.")
     depth_group.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
-    depth_group.add_argument("--fastmath", action="store_true", help="Enable fastmath for codec operations.")
+
+    performance_group = parser.add_argument_group("performance")
+    performance_group.add_argument("--no-parallel", action="store_true", help="Disable parallel for codec operations.")
+    performance_group.add_argument("--no-fastmath", action="store_true", help="Disable fastmath for codec operations.")
 
     output_group = parser.add_argument_group("output")
     output_group.add_argument("--stream-name", type=str, default="RGBDStream", help="Spout / Syphon stream name.")
@@ -64,8 +67,11 @@ def main():
     args = parse_args()
     vg.setup_logging(args.loglevel)
 
-    if args.fastmath:
-        codec.ENABLE_FAST_MATH = True
+    if args.no_parallel:
+        codec.ENABLE_PARALLEL = False
+
+    if args.no_fastmath:
+        codec.ENABLE_FAST_MATH = False
 
     if issubclass(args.input, vg.BaseDepthInput):
         args.depth = True
