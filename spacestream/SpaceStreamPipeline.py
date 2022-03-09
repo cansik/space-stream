@@ -47,6 +47,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         # options
         self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
+        self.encoding_time = DataField("-") | TextAnnotation("Encoding Time", readonly=True)
         self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
 
         self.depth_codec: DepthCodec = codec.value()
@@ -82,6 +83,9 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         # events
         self.on_frame_ready: Optional[Callable[[np.ndarray], None]] = None
+
+        # time
+        self.encoding_watch = vg.ProfileWatch()
 
         self.add_nodes(self.input)
 
@@ -176,7 +180,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
             min_value = round(self.min_distance / self.depth_units)
             max_value = round(self.max_distance / self.depth_units)
+
+            self.encoding_watch.start()
             depth_map = self.depth_codec.encode(depth, min_value, max_value)
+            self.encoding_watch.stop()
 
             # fix realsense image if it has been aligned to remove lines
             if isinstance(self.input, vg.RealSenseInput):
@@ -208,7 +215,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self.on_frame_ready(rgbd)
 
         self.fps_tracer.update()
-        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
+        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f} ms"
+        self.encoding_time.value = f"{self.encoding_watch.average():.2f} ms"
 
     def _release(self):
         if threading.current_thread() is threading.main_thread():
