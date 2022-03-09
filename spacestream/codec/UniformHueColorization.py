@@ -33,7 +33,7 @@ class UniformHueColorization(DepthCodec):
             r, g, b = 0, 0, 0
 
             # normalize depth
-            d_norm = ((d - d_min) / (d_max - d_min)) * INDEPENDENT_VALUES
+            d_norm = round(((d - d_min) / (d_max - d_min)) * INDEPENDENT_VALUES)
 
             # red
             if 0 <= d_norm <= 255 or 1275 < d_norm <= 1529:
