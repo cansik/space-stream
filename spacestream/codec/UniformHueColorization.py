@@ -50,7 +50,7 @@ class UniformHueColorization(DepthCodec):
                     disp_max = 1 / d_min
                     disp_min = 1 / d_max
 
-                    d_norm = (disp - disp_min) / (disp_max - disp_min) * INDEPENDENT_VALUES
+                    d_norm = round((disp - disp_min) / (disp_max - disp_min) * INDEPENDENT_VALUES)
             else:
                 d_norm = round(((d - d_min) / (d_max - d_min)) * INDEPENDENT_VALUES)
 
