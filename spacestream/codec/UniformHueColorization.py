@@ -90,6 +90,11 @@ class UniformHueColorization(DepthCodec):
 
     def decode(self, depth: np.ndarray, d_min: float, d_max: float) -> np.ndarray:
         super().prepare_decode_buffer(depth)
+
+        # check divide by zero
+        if self.inverse_transform and (d_min == 0 or d_max == 0):
+            raise Exception(f"Hue Codec: d_min ({d_min}) and d_max ({d_max}) are not allowed to be 0.")
+
         self._pdecode(depth.astype(np.uint16), self.decode_buffer, d_min, d_max, self.inverse_transform)
         return self.decode_buffer
 

@@ -215,7 +215,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self.on_frame_ready(rgbd)
 
         self.fps_tracer.update()
-        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f} ms"
+        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
         self.encoding_time.value = f"{self.encoding_watch.average():.2f} ms"
 
     def _release(self):
