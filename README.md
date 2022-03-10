@@ -1,7 +1,7 @@
 # Space Stream
 Send RGB-D images over spout / syphon with visiongraph.
 
-![Example Map](images/space-stream-ui-1024.jpg)
+![Example Map](images/space-stream-ui.jpg)
 *Source: Intel® RealSense™ [Sample Data](https://github.com/IntelRealSense/librealsense/blob/master/doc/sample-data.md)*
 
 ### Installation
