@@ -206,7 +206,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
         if threading.current_thread() is threading.main_thread():
             # send rgb-d over spout
             bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
-            self.fbs_client.send(bgrd)
+            self.fbs_client.send_frame(bgrd)
 
         if self.record and self.recorder is not None:
             self.recorder.add_image(bgrd)

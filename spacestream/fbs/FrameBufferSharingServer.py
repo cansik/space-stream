@@ -10,19 +10,23 @@ class FrameBufferSharingServer(vg.GraphNode, ABC):
         self.name = name
 
     @abstractmethod
-    def send(self, frame: np.array):
+    def send_frame(self, frame: np.array):
+        pass
+
+    @abstractmethod
+    def send_texture(self, texture, width: int, height: int, is_flipped: bool = False):
         pass
 
     def process(self, data: np.ndarray) -> None:
-        self.send(data)
+        self.send_frame(data)
 
     @staticmethod
     def create(name: str):
         if platform.startswith("darwin"):
-            from spacestream.fbs.SyphonServer import SyphonServer
+            from spacestream.fbs.syphon.SyphonServer import SyphonServer
             return SyphonServer(name)
         elif platform.startswith("win"):
-            from spacestream.fbs.SpoutServer import SpoutServer
+            from spacestream.fbs.spout.SpoutServer import SpoutServer
             return SpoutServer(name)
         else:
             raise Exception(f"Platform {platform} is not supported!")

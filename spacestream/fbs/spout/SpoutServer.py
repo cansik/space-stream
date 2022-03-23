@@ -20,7 +20,7 @@ class SpoutServer(FrameBufferSharingServer):
         self.ctx = SpoutGL.SpoutSender()
         self.ctx.setSenderName(self.name)
 
-    def send(self, frame: np.array, send_alpha: bool = True):
+    def send_frame(self, frame: np.array, send_alpha: bool = True):
         h, w = frame.shape[:2]
 
         if send_alpha and frame.shape[2] < 4:

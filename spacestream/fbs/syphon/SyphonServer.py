@@ -4,26 +4,6 @@ from typing import Optional, Any
 import cv2
 import glfw
 
-
-def monkeypatch_ctypes():
-    import os
-    import ctypes.util
-    uname = os.uname()
-    if uname.sysname == "Darwin" and uname.release >= "20.":
-        real_find_library = ctypes.util.find_library
-
-        def find_library(name):
-            if name in {"OpenGL", "GLUT"}:  # add more names here if necessary
-                return f"/System/Library/Frameworks/{name}.framework/{name}"
-            return real_find_library(name)
-
-        ctypes.util.find_library = find_library
-    return
-
-
-# fixes opengl import on MacOS
-monkeypatch_ctypes()
-
 import numpy as np
 import syphonpy
 
@@ -52,11 +32,16 @@ class SyphonServer(FrameBufferSharingServer):
             logging.error("error in syphonserver")
         self.texture = glGenTextures(1)
 
-    def send(self, frame: np.array):
+    def send_frame(self, frame: np.array):
         h, w = frame.shape[:2]
 
         self._numpy_to_texture(frame, w, h)
-        self.ctx.publish_frame_texture(self.texture, syphonpy.MakeRect(0, 0, w, h), syphonpy.MakeSize(w, h), False)
+        self.send_texture(self.texture, w, h, False)
+
+    def send_texture(self, texture: glGenTextures, width: int, height: int, is_flipped: bool = False):
+        self.ctx.publish_frame_texture(texture,
+                                       syphonpy.MakeRect(0, 0, width, height),
+                                       syphonpy.MakeSize(width, height), is_flipped)
 
     def release(self):
         self.ctx.stop()

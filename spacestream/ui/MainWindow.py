@@ -145,7 +145,7 @@ class MainWindow:
 
         def update():
             # send stream
-            self.pipeline.fbs_client.send(bgrd)
+            self.pipeline.fbs_client.send_frame(bgrd)
 
             # update image
             self.rgb_widget.update_image(image)
