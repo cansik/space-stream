@@ -47,11 +47,9 @@ class SpoutServer(FrameBufferSharingServer):
         self.ctx.setFrameSync(self.name)
 
     def send_fbo(self, fbo_id: int, width: int, height: int, is_flipped: bool = False):
-        current_draw_fbo = glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING)
-
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id)
         success = self.ctx.sendFbo(fbo_id, width, height, is_flipped)
-        glBindFramebuffer(GL_FRAMEBUFFER, current_draw_fbo)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
         if not success:
             logging.warning("Could not send spout fbo.")
