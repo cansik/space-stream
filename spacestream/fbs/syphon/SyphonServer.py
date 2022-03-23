@@ -30,8 +30,6 @@ class SyphonServer(FrameBufferSharingServer):
         if self.create_gl_context:
             self._window_handle = SyphonUtils.create_gl_context()
 
-        print(f"Window Handle: {self._window_handle}")
-
         # setup spout
         self.ctx = syphonpy.SyphonServer(self.name)
         if self.ctx.error_state():
