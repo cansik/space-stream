@@ -35,6 +35,7 @@ class SyphonServer(FrameBufferSharingServer):
         if self.ctx.error_state():
             logging.error("error in syphonserver")
         self.texture = glGenTextures(1)
+        print(self.texture)
 
     def send_frame(self, frame: np.array):
         h, w = frame.shape[:2]
@@ -42,8 +43,8 @@ class SyphonServer(FrameBufferSharingServer):
         self._numpy_to_texture(frame, w, h)
         self.send_texture(self.texture, w, h, False)
 
-    def send_texture(self, texture: glGenTextures, width: int, height: int, is_flipped: bool = False):
-        self.ctx.publish_frame_texture(texture,
+    def send_texture(self, texture_id: int, width: int, height: int, is_flipped: bool = False):
+        self.ctx.publish_frame_texture(texture_id,
                                        syphonpy.MakeRect(0, 0, width, height),
                                        syphonpy.MakeSize(width, height), is_flipped)
 

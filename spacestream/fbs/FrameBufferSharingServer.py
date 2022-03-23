@@ -16,7 +16,7 @@ class FrameBufferSharingServer(vg.GraphNode, ABC):
         pass
 
     @abstractmethod
-    def send_texture(self, texture, width: int, height: int, is_flipped: bool = False):
+    def send_texture(self, texture_id: int, width: int, height: int, is_flipped: bool = False):
         pass
 
     @abstractmethod
