@@ -1,13 +1,12 @@
 import logging
 from argparse import ArgumentParser, Namespace
-from typing import Optional, Any
+from typing import Optional
 
 import SpoutGL
 import cv2
 import numpy as np
 from OpenGL import GL
 from OpenGL.GL import *
-from OpenGL.GLU import *
 
 from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
