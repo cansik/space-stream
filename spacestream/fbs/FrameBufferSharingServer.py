@@ -20,7 +20,7 @@ class FrameBufferSharingServer(vg.GraphNode, ABC):
         pass
 
     @abstractmethod
-    def send_fbo(self, fbo_id: int, width: int, height: int):
+    def send_fbo(self, fbo_id: int, width: int, height: int, is_flipped: bool = False):
         pass
 
     def process(self, data: np.ndarray) -> None:

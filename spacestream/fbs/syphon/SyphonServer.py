@@ -48,7 +48,7 @@ class SyphonServer(FrameBufferSharingServer):
                                        syphonpy.MakeRect(0, 0, width, height),
                                        syphonpy.MakeSize(width, height), is_flipped)
 
-    def send_fbo(self, fbo_id: int, width: int, height: int):
+    def send_fbo(self, fbo_id: int, width: int, height: int, is_flipped: bool = False):
         # todo: implement this example https://gist.github.com/ZeroStride/3156985
         raise Exception("FBO sharing is not implemented in syphon.")
 

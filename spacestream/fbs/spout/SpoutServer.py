@@ -46,12 +46,11 @@ class SpoutServer(FrameBufferSharingServer):
 
         self.ctx.setFrameSync(self.name)
 
-    def send_fbo(self, fbo_id: int, width: int, height: int):
+    def send_fbo(self, fbo_id: int, width: int, height: int, is_flipped: bool = False):
         current_draw_fbo = glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING)
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id)
-        # todo: is this flag for flipping?
-        success = self.ctx.sendFbo(fbo_id, width, height, True)
+        success = self.ctx.sendFbo(fbo_id, width, height, is_flipped)
         glBindFramebuffer(GL_FRAMEBUFFER, current_draw_fbo)
 
         if not success:
