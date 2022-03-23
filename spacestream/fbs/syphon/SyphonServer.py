@@ -49,8 +49,12 @@ class SyphonServer(FrameBufferSharingServer):
                                        syphonpy.MakeSize(width, height), is_flipped)
 
     def send_fbo(self, fbo_id: int, width: int, height: int, is_flipped: bool = False):
-        # todo: implement this example https://gist.github.com/ZeroStride/3156985
-        raise Exception("FBO sharing is not implemented in syphon.")
+        # todo: test if this works
+        # maybe test out https://gist.github.com/ZeroStride/3156985
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_id)
+        self.send_texture(0, width, height, is_flipped)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
     def release(self):
         self.ctx.stop()

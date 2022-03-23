@@ -6,7 +6,7 @@ import numpy as np
 import visiongraph as vg
 
 
-class FrameBufferSharingServer(vg.GraphNode, ABC):
+class FrameBufferSharingServer(vg.GraphNode[np.ndarray, None], ABC):
     def __init__(self, name: str, gl_context: Optional[Any] = None):
         self.name = name
         self.gl_context = gl_context
