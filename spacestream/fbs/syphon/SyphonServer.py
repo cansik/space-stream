@@ -16,20 +16,19 @@ from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 class SyphonServer(FrameBufferSharingServer):
     def __init__(self, name: str = "SyphonServer", gl_context: Optional[Any] = None):
-        super().__init__(name)
+        super().__init__(name, gl_context)
 
         self.ctx: Optional[syphonpy.SyphonServer] = None
         self.texture: Optional[glGenTextures] = None
 
         self._window: Optional[Any] = None
-        self._gl_context = gl_context
 
     def setup(self):
         # setup GL context
-        if self._gl_context is None:
+        if self.gl_context is None:
             self._create_gl_context()
         else:
-            glfw.make_context_current(self._gl_context)
+            glfw.make_context_current(self.gl_context)
 
         # setup spout
         self.ctx = syphonpy.SyphonServer(self.name)
@@ -47,6 +46,10 @@ class SyphonServer(FrameBufferSharingServer):
         self.ctx.publish_frame_texture(texture,
                                        syphonpy.MakeRect(0, 0, width, height),
                                        syphonpy.MakeSize(width, height), is_flipped)
+
+    def send_fbo(self, fbo_id: int, width: int, height: int):
+        # todo: implement this example https://gist.github.com/ZeroStride/3156985
+        raise Exception("FBO sharing is not implemented in syphon.")
 
     def release(self):
         self.ctx.stop()

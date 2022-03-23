@@ -1,6 +1,6 @@
 import logging
 from argparse import ArgumentParser, Namespace
-from typing import Optional
+from typing import Optional, Any
 
 import SpoutGL
 import cv2
@@ -37,6 +37,10 @@ class SpoutServer(FrameBufferSharingServer):
 
     def send_texture(self, texture, width: int, height: int, is_flipped: bool = False):
         # todo: implemented texture sending
+        pass
+
+    def send_fbo(self, fbo_id: int, width: int, height: int):
+        # todo: implemented fbo sharing
         pass
 
     def release(self):
