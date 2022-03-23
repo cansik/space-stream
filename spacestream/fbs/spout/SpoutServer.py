@@ -38,7 +38,7 @@ class SpoutServer(FrameBufferSharingServer):
         self.ctx.setFrameSync(self.name)
 
     def send_texture(self, texture_id: int, width: int, height: int, is_flipped: bool = False):
-        success = self.ctx.sendTexture(texture_id, GL_TEXTURE_2D, width, height, True, 0)
+        success = self.ctx.sendTexture(texture_id, GL_TEXTURE_2D, width, height, is_flipped, 0)
 
         if not success:
             logging.warning("Could not send spout texture.")
