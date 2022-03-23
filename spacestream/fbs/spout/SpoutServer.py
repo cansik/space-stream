@@ -35,6 +35,10 @@ class SpoutServer(FrameBufferSharingServer):
         # Indicate that a frame is ready to read
         self.ctx.setFrameSync(self.name)
 
+    def send_texture(self, texture, width: int, height: int, is_flipped: bool = False):
+        # todo: implemented texture sending
+        pass
+
     def release(self):
         self.ctx.releaseSender()
 

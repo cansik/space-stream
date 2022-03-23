@@ -15,18 +15,23 @@ from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 
 class SyphonServer(FrameBufferSharingServer):
-    def __init__(self, name: str = "SyphonServer"):
+    def __init__(self, name: str = "SyphonServer", gl_context: Optional[Any] = None):
         super().__init__(name)
 
         self.ctx: Optional[syphonpy.SyphonServer] = None
         self.texture: Optional[glGenTextures] = None
 
         self._window: Optional[Any] = None
+        self._gl_context = gl_context
 
     def setup(self):
-        # setup spout
-        self._create_gl_context()
+        # setup GL context
+        if self._gl_context is None:
+            self._create_gl_context()
+        else:
+            glfw.make_context_current(self._gl_context)
 
+        # setup spout
         self.ctx = syphonpy.SyphonServer(self.name)
         if self.ctx.error_state():
             logging.error("error in syphonserver")
