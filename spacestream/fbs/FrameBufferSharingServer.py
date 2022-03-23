@@ -27,10 +27,10 @@ class FrameBufferSharingServer(vg.GraphNode[np.ndarray, None], ABC):
         self.send_frame(data)
 
     @staticmethod
-    def create(name: str, gl_context: Optional[Any] = None):
+    def create(name: str, create_gl_context: bool = True):
         if platform.startswith("darwin"):
             from spacestream.fbs.syphon.SyphonServer import SyphonServer
-            return SyphonServer(name, gl_context)
+            return SyphonServer(name, create_gl_context)
         elif platform.startswith("win"):
             from spacestream.fbs.spout.SpoutServer import SpoutServer
             return SpoutServer(name)
