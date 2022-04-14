@@ -69,22 +69,22 @@ class UniformHueColorization(DepthCodec):
             # green
             if 0 < d_norm <= 255:
                 g = d_norm
-            elif 255 < d_norm <= 510:
+            elif 255 < d_norm <= 765:
                 g = 255
-            elif 510 < d_norm <= 765:
+            elif 765 < d_norm <= 1020:
                 g = 765 - d_norm
-            elif 765 < d_norm <= 1529:
+            elif d_norm > 1020:
                 g = 0
 
             # blue
-            if 0 < d_norm <= 765:
+            if 0 < d_norm <= 510:
                 b = 0
-            elif 765 < d_norm <= 1020:
-                b = d_norm - 765
-            elif 1020 < d_norm <= 1275:
+            elif 510 < d_norm <= 765:
+                b = d_norm - 510
+            elif 765 < d_norm <= 1275:
                 b = 255
             elif 1275 < d_norm <= 1529:
-                b = 1275 - d_norm
+                b = 1529 - d_norm
 
             result[y, x, 0] = b
             result[y, x, 1] = g
