@@ -117,6 +117,7 @@ class UniformHueColorization(DepthCodec):
 
             d_norm = 0
 
+            # paper version
             if r >= g and r >= b and g >= b:
                 d_norm = g - b
             elif r >= g and r >= b and g < b:
@@ -125,6 +126,19 @@ class UniformHueColorization(DepthCodec):
                 d_norm = b - r + 510
             elif b >= g and b >= r:
                 d_norm = r - g + 1020
+
+            # direct cpp conversion:
+            # if b + g + r < 255:
+            #     d_norm = 0
+            # elif r >= g and r >= b:
+            #     if g >= b:
+            #         d_norm = g - b
+            #     else:
+            #         d_norm = (g - b) + 1529
+            # elif g >= r and g >= b:
+            #     d_norm = b - r + 510
+            # elif b >= g and b >= r:
+            #     d_norm = r - g + 1020
 
             # normalize depth
             if inverse_transform:

@@ -38,6 +38,13 @@ class MainWindow:
         self.settings_panel.data_context = pipeline
         self.window.add_child(self.settings_panel)
 
+        # used for colorized preview
+        self.colorizer = rs.colorizer()
+        self.colorizer.set_option(rs.option.histogram_equalization_enabled, 0)
+        self.colorizer.set_option(rs.option.color_scheme, 9.0)
+        self.colorizer.set_option(rs.option.min_distance, self.pipeline.min_distance.value)
+        self.colorizer.set_option(rs.option.max_distance, self.pipeline.max_distance.value)
+
         # info panel
         self.settings_panel.add_child(gui.Label("View Parameter"))
 
@@ -175,7 +182,13 @@ class MainWindow:
 
         if self.display_depth_map.checked:
             if isinstance(self.pipeline.input, vg.DepthBuffer):
-                preview_image = self.pipeline.input.depth_map
+                if isinstance(self.pipeline.input, vg.RealSenseInput):
+                    self.colorizer.set_option(rs.option.min_distance, self.pipeline.min_distance.value)
+                    self.colorizer.set_option(rs.option.max_distance, self.pipeline.max_distance.value)
+                    colorized_frame = self.colorizer.colorize(self.pipeline.input.depth_frame)
+                    preview_image = np.asanyarray(colorized_frame.get_data())
+                else:
+                    preview_image = self.pipeline.input.depth_map
 
         image = o3d.geometry.Image(preview_image)
 
