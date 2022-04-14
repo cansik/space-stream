@@ -43,6 +43,7 @@ class UniformHueColorization(DepthCodec):
 
             # normalize depth
             if inverse_transform:
+                # inverse
                 if d == 0:
                     d_norm = 0
                 else:
@@ -52,6 +53,7 @@ class UniformHueColorization(DepthCodec):
 
                     d_norm = round((disp - disp_min) / (disp_max - disp_min) * INDEPENDENT_VALUES)
             else:
+                # uniform
                 d_norm = round(((d - d_min) / (d_max - d_min)) * INDEPENDENT_VALUES)
 
             # red
@@ -126,9 +128,11 @@ class UniformHueColorization(DepthCodec):
 
             # normalize depth
             if inverse_transform:
+                # inverse
                 disp_max = 1 / d_min
                 disp_min = 1 / d_max
                 d_recovery = INDEPENDENT_VALUES / ((INDEPENDENT_VALUES * disp_min) + (disp_max - disp_min) * d_norm)
             else:
+                # uniform
                 d_recovery = d_min + (((d_max - d_min) * d_norm) / INDEPENDENT_VALUES)
             result[y, x] = d_recovery

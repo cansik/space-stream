@@ -9,6 +9,7 @@ import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
 from simbi.model.DataField import DataField
+from simbi.ui.annotations import NumberAnnotation
 from simbi.ui.annotations.BooleanAnnotation import BooleanAnnotation
 from simbi.ui.annotations.EnumAnnotation import EnumAnnotation
 from simbi.ui.annotations.TextAnnotation import TextAnnotation
@@ -60,8 +61,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.depth_codec: DepthCodec = codec.value()
         self.codec = DataField(codec) | EnumAnnotation("Codec")
-        self.min_distance = min_distance
-        self.max_distance = max_distance
+        self.min_distance = DataField(min_distance) | NumberAnnotation("Min Distance")
+        self.max_distance = DataField(max_distance) | NumberAnnotation("Max Distance")
 
         def codec_changed(c):
             self.depth_codec = c.value()
@@ -107,8 +108,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
         if isinstance(self.input, vg.RealSenseInput):
             if not self.use_midas:
                 self.input.colorizer.set_option(rs.option.histogram_equalization_enabled, 0)
-                self.input.colorizer.set_option(rs.option.min_distance, self.min_distance)
-                self.input.colorizer.set_option(rs.option.max_distance, self.max_distance)
+                self.input.colorizer.set_option(rs.option.min_distance, self.min_distance.value)
+                self.input.colorizer.set_option(rs.option.max_distance, self.max_distance.value)
 
             # display intrinsics
             profiles = self.input.pipeline.get_active_profile()
@@ -192,8 +193,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
             # read depth map and create rgb-d image
 
-            min_value = round(self.min_distance / self.depth_units)
-            max_value = round(self.max_distance / self.depth_units)
+            min_value = round(self.min_distance.value / self.depth_units)
+            max_value = round(self.max_distance.value / self.depth_units)
 
             self.encoding_watch.start()
             depth_map = self.depth_codec.encode(depth, min_value, max_value)

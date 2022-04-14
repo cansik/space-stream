@@ -205,7 +205,7 @@ class MainWindow:
         intrinsic_matrix = o3d.core.Tensor(
             self.pipeline.get_intrinsics(),
             dtype=o3d.core.Dtype.Float32)
-        depth_max = self.pipeline.max_distance  # m
+        depth_max = self.pipeline.max_distance.value  # m
         pcd_stride = self.pcl_stride.int_value  # downsample point cloud, may increase frame rate
         flag_normals = False
         depth_scale = 1000
@@ -215,8 +215,8 @@ class MainWindow:
         depth = np.copy(frame[0:h, 0:w])
 
         # decode
-        min_value = round(self.pipeline.min_distance / self.pipeline.depth_units)
-        max_value = round(self.pipeline.max_distance / self.pipeline.depth_units)
+        min_value = round(self.pipeline.min_distance.value / self.pipeline.depth_units)
+        max_value = round(self.pipeline.max_distance.value / self.pipeline.depth_units)
 
         if isinstance(self.pipeline.depth_codec, LinearCodec):
             depth = self.pipeline.depth_codec.decode(depth, min_value, max_value,
