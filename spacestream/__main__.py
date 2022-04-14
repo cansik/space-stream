@@ -58,9 +58,13 @@ def parse_args():
     debug_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
     debug_group.add_argument("--no-preview", action="store_true", help="Disable preview to speed.")
     debug_group.add_argument("--record", action="store_true", help="Record output into recordings folder.")
-    debug_group.add_argument("--view-pcd", action="store_true", help="Display PCB preview.")
+    debug_group.add_argument("--view-pcd", action="store_true", help="Display PCB preview (deprecated - use --view-3d).")
+    debug_group.add_argument("--view-3d", action="store_true", help="Display PCB preview.")
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    args.view_3d = args.view_pcd
+    return args
 
 
 def main():

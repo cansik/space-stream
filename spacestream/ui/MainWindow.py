@@ -15,6 +15,7 @@ from spacestream.codec.LinearCodec import LinearCodec
 from spacestream.ui.PipelineView import PipelineView
 
 import visiongraph as vg
+import pyrealsense2 as rs
 
 
 class MainWindow:
@@ -38,36 +39,61 @@ class MainWindow:
         self.window.add_child(self.settings_panel)
 
         self.settings_panel.add_child(gui.Label("View Parameter"))
-        self.render_3d_view = gui.Checkbox("Render 3D")
-        self.render_3d_view.checked = True
-        self.settings_panel.add_child(self.render_3d_view)
-
-        self.display_16_bit = gui.Checkbox("Display 16bit")
-        self.display_16_bit.checked = True
-        self.settings_panel.add_child(self.display_16_bit)
 
         self.display_depth_map = gui.Checkbox("Display Depth Map")
         self.display_depth_map.checked = False
         self.settings_panel.add_child(self.display_depth_map)
 
-        self.settings_panel.add_child(gui.Label("PCL Stride"))
-        self.pcl_stride = gui.Slider(gui.Slider.INT)
-        self.pcl_stride.set_limits(1, 10)
-        self.pcl_stride.int_value = 4
-        self.settings_panel.add_child(self.pcl_stride)
+        if args.view_3d:
+            self.display_16_bit = gui.Checkbox("Display 16bit")
+            self.display_16_bit.checked = True
+            self.settings_panel.add_child(self.display_16_bit)
 
-        self.settings_panel.add_child(gui.Label("Point Size"))
-        self.point_size = gui.Slider(gui.Slider.INT)
-        self.point_size.set_limits(1, 10)
-        self.point_size.int_value = 2
-        self.settings_panel.add_child(self.point_size)
+            self.render_3d_view = gui.Checkbox("Render 3D")
+            self.render_3d_view.checked = True
+            self.settings_panel.add_child(self.render_3d_view)
 
-        def on_point_size_changed(size):
-            if self.pipeline_view is None:
-                return
-            self.pipeline_view.pcd_material.point_size = int(size * self.window.scaling)
+            self.settings_panel.add_child(gui.Label("PCL Stride"))
+            self.pcl_stride = gui.Slider(gui.Slider.INT)
+            self.pcl_stride.set_limits(1, 10)
+            self.pcl_stride.int_value = 4
+            self.settings_panel.add_child(self.pcl_stride)
 
-        self.point_size.set_on_value_changed(on_point_size_changed)
+            self.settings_panel.add_child(gui.Label("Point Size"))
+            self.point_size = gui.Slider(gui.Slider.INT)
+            self.point_size.set_limits(1, 10)
+            self.point_size.int_value = 2
+            self.settings_panel.add_child(self.point_size)
+
+            def on_point_size_changed(size):
+                if self.pipeline_view is None:
+                    return
+                self.pipeline_view.pcd_material.point_size = int(size * self.window.scaling)
+
+            self.point_size.set_on_value_changed(on_point_size_changed)
+
+        if isinstance(pipeline.input, vg.RealSenseInput) and pipeline.input.input_bag_file is not None:
+            self.settings_panel.add_child(gui.Label("RealSense"))
+
+            self.play_bag = gui.Checkbox("Play")
+            self.play_bag.checked = True
+            self.settings_panel.add_child(self.play_bag)
+
+            def on_play_bag_changed(value):
+                if not isinstance(pipeline.input, vg.RealSenseInput):
+                    return
+
+                if pipeline.input.device is None:
+                    return
+
+                playback: rs.playback = pipeline.input.profile.get_device().as_playback()
+
+                if value:
+                    playback.resume()
+                else:
+                    playback.pause()
+
+            self.play_bag.set_on_checked(on_play_bag_changed)
 
         separation_height = int(round(0.5 * self.em))
 
@@ -86,7 +112,7 @@ class MainWindow:
         # pipeline
         self.pipeline_view: Optional[PipelineView] = None
 
-        if args.view_pcd:
+        if args.view_3d:
             self.pipeline_view = PipelineView(60, 640 * 480, self.window, on_window_close=self._on_close)
             self.pipeline_view.window = self.window
             self.window.add_child(self.pipeline_view.pcdview)
