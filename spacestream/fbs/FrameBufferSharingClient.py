@@ -39,6 +39,7 @@ class FrameBufferSharingClient(vg.BaseInput, ABC):
             from spacestream.fbs.syphon.SyphonClient import SyphonClient
             return SyphonClient(server_name, create_gl_context)
         elif platform.startswith("win"):
-            raise Exception("Not implemented on windows yet.")
+            from spacestream.fbs.spout.SpoutClient import SpoutClient
+            return SpoutClient(server_name)
         else:
             raise Exception(f"Platform {platform} is not supported!")
