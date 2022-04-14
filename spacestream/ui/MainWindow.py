@@ -38,6 +38,7 @@ class MainWindow:
         self.settings_panel.data_context = pipeline
         self.window.add_child(self.settings_panel)
 
+        # info panel
         self.settings_panel.add_child(gui.Label("View Parameter"))
 
         self.display_depth_map = gui.Checkbox("Display Depth Map")
@@ -151,6 +152,22 @@ class MainWindow:
         self.pipeline.fbs_client.release()
         self.pipeline.close()
         gui.Application.instance.quit()
+
+    @staticmethod
+    def _create_preview_parameter(name: str, value: str) -> gui.Horiz:
+        container = gui.Horiz()
+
+        container.add_child(gui.Label(name))
+        value_edit = gui.TextEdit()
+        value_edit.text_value = value
+        container.add_child(value_edit)
+
+        def on_value_changed(text):
+            value_edit.text_value = value
+
+        value_edit.set_on_text_changed(on_value_changed)
+
+        return container
 
     def on_frame_ready(self, frame: np.ndarray):
         bgrd = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)

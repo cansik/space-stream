@@ -15,7 +15,6 @@ from simbi.ui.annotations.TextAnnotation import TextAnnotation
 
 from spacestream.codec.DepthCodec import DepthCodec
 from spacestream.codec.DepthCodecType import DepthCodecType
-from spacestream.codec.UniformHueColorization import UniformHueColorization
 from spacestream.fbs import FrameBufferSharingServer
 
 
@@ -49,6 +48,15 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
         self.encoding_time = DataField("-") | TextAnnotation("Encoding Time", readonly=True)
         self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
+
+        self.intrinsics_res = DataField("-")
+        self.intrinsics_principle = DataField("-")
+        self.intrinsics_focal = DataField("-")
+
+        if isinstance(input, vg.DepthBuffer):
+            self.intrinsics_res | TextAnnotation("Resolution")
+            self.intrinsics_principle | TextAnnotation("Principle Point")
+            self.intrinsics_focal | TextAnnotation("Focal Point")
 
         self.depth_codec: DepthCodec = codec.value()
         self.codec = DataField(codec) | EnumAnnotation("Codec")
@@ -106,12 +114,16 @@ class SpaceStreamPipeline(vg.BaseGraph):
             profiles = self.input.pipeline.get_active_profile()
 
             stream = profiles.get_stream(rs.stream.depth).as_video_stream_profile()
-            intrinsics = stream.get_intrinsics()
+            intrinsics: rs.intrinsics = stream.get_intrinsics()
             logging.info(f"Depth Intrinsics: {intrinsics}")
 
             stream = profiles.get_stream(rs.stream.color).as_video_stream_profile()
             intrinsics = stream.get_intrinsics()
             logging.info(f"RGB Intrinsics: {intrinsics}")
+
+            self.intrinsics_res.value = f"{intrinsics.width} x {intrinsics.height}"
+            self.intrinsics_principle.value = f"{intrinsics.ppx:.2f} / {intrinsics.ppy:.2f}"
+            self.intrinsics_focal.value = f"{intrinsics.fx:.2f} / {intrinsics.fy:.2f}"
 
         if isinstance(self.input, vg.AzureKinectInput):
             from pyk4a import CalibrationType
@@ -121,6 +133,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
             logging.info(f"Serial: {self.input.device.serial}")
             logging.info(f"Depth Intrinsics:\n{mat}")
+
+            # todo: add azure kinect params to ui
 
     def get_intrinsics(self) -> np.ndarray:
         if isinstance(self.input, vg.RealSenseInput):
