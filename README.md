@@ -16,7 +16,8 @@ pip install -r requirements.txt
 To install the package on Apple silicon macs with an amd64 CPU you currently have to install the llvm package first regarding [this thread](https://numba.discourse.group/t/wheels-for-apple-silicon-m1/1282).
 
 ```
-pip install -i https://pypi.anaconda.org/numba/label/wheels_experimental_m1/simple llvmlite
+pip install "numpy==1.21.*" importlib-metadata # manually install dependencies
+pip install -i https://pypi.anaconda.org/numba/label/wheels_experimental_m1/simple numba
 ```
 
 ### Usage
