@@ -42,6 +42,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.depth_units: float = 0.001
 
+        self._intrinsic_update_requested = True
+
         # options
         self.pipeline_fps = DataField("-") | dui.Text("Pipeline FPS", readonly=True)
         self.encoding_time = DataField("-") | dui.Text("Encoding Time", readonly=True)
@@ -50,11 +52,14 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.intrinsics_res = DataField("-")
         self.intrinsics_principle = DataField("-")
         self.intrinsics_focal = DataField("-")
+        self.normalize_intrinsics = DataField(True)
 
         if isinstance(input, vg.DepthBuffer):
             self.intrinsics_res | dui.Text("Resolution")
             self.intrinsics_principle | dui.Text("Principle Point")
             self.intrinsics_focal | dui.Text("Focal Point")
+            self.normalize_intrinsics | dui.Boolean("Normalize Intrinsics")
+            self.normalize_intrinsics.on_changed += self._request_intrinsic_update()
 
         self.depth_codec: DepthCodec = codec.value()
         self.codec = DataField(codec) | dui.Enum("Codec")
@@ -63,6 +68,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         def codec_changed(c):
             self.depth_codec = c.value()
+
         self.codec.on_changed += codec_changed
 
         self.record = record
@@ -95,6 +101,40 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.add_nodes(self.input)
 
+    def _update_intrinsics(self, frame: np.ndarray):
+        h, w = frame.shape[:2]
+        self.intrinsics_res.value = f"{w} x {h}"
+
+        if isinstance(self.input, vg.BaseDepthCamera):
+            intrinsics = self.input.camera_matrix
+
+            ppx = intrinsics[0, 2]
+            ppy = intrinsics[1, 2]
+
+            fx = intrinsics[0, 0]
+            fy = intrinsics[1, 1]
+
+            pp_str = f"{ppx:.2f} / {ppy:.2f}"
+            f_str = f"{fx:.2f} / {fy:.2f}"
+
+            if self.normalize_intrinsics.value:
+                ppx /= w
+                ppy /= h
+                fx /= w
+                fy /= h
+
+                pp_str = f"{ppx:.4f} / {ppy:.4f}"
+                f_str = f"{fx:.4f} / {fy:.4f}"
+
+            self.intrinsics_principle.value = pp_str
+            self.intrinsics_focal.value = f_str
+        else:
+            self.intrinsics_principle.value = "-"
+            self.intrinsics_focal.value = "-"
+
+    def _request_intrinsic_update(self):
+        self._intrinsic_update_requested = True
+
     def _init(self):
         super()._init()
 
@@ -108,21 +148,6 @@ class SpaceStreamPipeline(vg.BaseGraph):
                 self.input.colorizer.set_option(rs.option.min_distance, self.min_distance.value)
                 self.input.colorizer.set_option(rs.option.max_distance, self.max_distance.value)
 
-            # display intrinsics
-            profiles = self.input.pipeline.get_active_profile()
-
-            stream = profiles.get_stream(rs.stream.depth).as_video_stream_profile()
-            intrinsics: rs.intrinsics = stream.get_intrinsics()
-            logging.info(f"Depth Intrinsics: {intrinsics}")
-
-            stream = profiles.get_stream(rs.stream.color).as_video_stream_profile()
-            intrinsics = stream.get_intrinsics()
-            logging.info(f"RGB Intrinsics: {intrinsics}")
-
-            self.intrinsics_res.value = f"{intrinsics.width} x {intrinsics.height}"
-            self.intrinsics_principle.value = f"{intrinsics.ppx:.2f} / {intrinsics.ppy:.2f}"
-            self.intrinsics_focal.value = f"{intrinsics.fx:.2f} / {intrinsics.fy:.2f}"
-
         if isinstance(self.input, vg.AzureKinectInput):
             from pyk4a import CalibrationType
 
@@ -130,28 +155,6 @@ class SpaceStreamPipeline(vg.BaseGraph):
             mat = calibration.get_camera_matrix(CalibrationType.DEPTH)
 
             logging.info(f"Serial: {self.input.device.serial}")
-            logging.info(f"Depth Intrinsics:\n{mat}")
-
-            # todo: add azure kinect params to ui
-
-    def get_intrinsics(self) -> np.ndarray:
-        if isinstance(self.input, vg.RealSenseInput):
-            profiles = self.input.pipeline.get_active_profile()
-
-            stream = profiles.get_stream(rs.stream.color).as_video_stream_profile()
-            intrinsics = stream.get_intrinsics()
-            return np.array([[intrinsics.fx, 0, intrinsics.ppx],
-                             [0, intrinsics.fy, intrinsics.ppy],
-                             [0, 0, 1]])
-
-        if isinstance(self.input, vg.AzureKinectInput):
-            from pyk4a import CalibrationType
-
-            calibration = self.input.device.calibration
-            mat = calibration.get_camera_matrix(CalibrationType.DEPTH)
-            return mat
-
-        return np.ndarray(shape=(3, 3))
 
     def _process(self):
         ts, frame = self.input.read()
@@ -215,6 +218,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
             # just send rgb image for testing
             rgbd = frame
 
+        if self._update_intrinsics:
+            self._intrinsic_update_requested = False
+            self._update_intrinsics(frame)
+
         if threading.current_thread() is threading.main_thread():
             # send rgb-d over spout
             bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
@@ -228,6 +235,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.fps_tracer.update()
         self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
+
         self.encoding_time.value = f"{self.encoding_watch.average():.2f} ms"
 
     def _release(self):
