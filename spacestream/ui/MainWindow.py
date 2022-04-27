@@ -1,7 +1,7 @@
 import logging
 import signal
 import traceback
-from typing import Optional
+from typing import Optional, Sequence
 
 import cv2
 import numpy as np
@@ -114,6 +114,8 @@ class MainWindow:
         # hook to events
         self.pipeline.on_frame_ready = self.on_frame_ready
         self.pipeline.on_exception = self._on_pipeline_exception
+        self.pipeline.disable_preview.on_changed += self._disable_preview_changed
+        self.pipeline.disable_preview.fire_latest()
 
         signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -258,3 +260,33 @@ class MainWindow:
             self.pipeline_view.update(frame_elements)
 
         gui.Application.instance.post_to_main_thread(self.pipeline_view.window, update)
+
+    def _disable_preview_changed(self, is_disabled: bool):
+        if is_disabled:
+            self.display_info("Preview Disabled")
+
+    def display_info(self, text: str,
+                     text_color: Sequence[int] = (255, 255, 255),
+                     background_color: Sequence[int] = (0, 0, 0)):
+        img = np.zeros((512, 512, 3), np.uint8)
+        img[:, :] = background_color
+
+        # setup text
+        font = cv2.FONT_HERSHEY_SIMPLEX
+
+        # get boundary of this text
+        text_size = cv2.getTextSize(text, font, 1, 2)[0]
+
+        # get coords based on boundary
+        text_x = (img.shape[1] - text_size[0]) // 2
+        text_y = (img.shape[0] + text_size[1]) // 2
+
+        # add text centered on image
+        cv2.putText(img, text, (text_x, text_y), font, 1, text_color, 2)
+
+        image = o3d.geometry.Image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+        def update():
+            self.rgb_widget.update_image(image)
+
+        gui.Application.instance.post_to_main_thread(self.window, update)
