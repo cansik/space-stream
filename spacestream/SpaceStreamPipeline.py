@@ -9,10 +9,7 @@ import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
 from duit.model.DataField import DataField
-from duit.ui.annotations import NumberAnnotation
-from duit.ui.annotations.BooleanAnnotation import BooleanAnnotation
-from duit.ui.annotations.EnumAnnotation import EnumAnnotation
-from duit.ui.annotations.TextAnnotation import TextAnnotation
+import duit.ui as dui
 
 from spacestream.codec.DepthCodec import DepthCodec
 from spacestream.codec.DepthCodecType import DepthCodecType
@@ -46,23 +43,23 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.depth_units: float = 0.001
 
         # options
-        self.pipeline_fps = DataField("-") | TextAnnotation("Pipeline FPS", readonly=True)
-        self.encoding_time = DataField("-") | TextAnnotation("Encoding Time", readonly=True)
-        self.disable_preview = DataField(False) | BooleanAnnotation("Disable Preview")
+        self.pipeline_fps = DataField("-") | dui.Text("Pipeline FPS", readonly=True)
+        self.encoding_time = DataField("-") | dui.Text("Encoding Time", readonly=True)
+        self.disable_preview = DataField(False) | dui.Boolean("Disable Preview")
 
         self.intrinsics_res = DataField("-")
         self.intrinsics_principle = DataField("-")
         self.intrinsics_focal = DataField("-")
 
         if isinstance(input, vg.DepthBuffer):
-            self.intrinsics_res | TextAnnotation("Resolution")
-            self.intrinsics_principle | TextAnnotation("Principle Point")
-            self.intrinsics_focal | TextAnnotation("Focal Point")
+            self.intrinsics_res | dui.Text("Resolution")
+            self.intrinsics_principle | dui.Text("Principle Point")
+            self.intrinsics_focal | dui.Text("Focal Point")
 
         self.depth_codec: DepthCodec = codec.value()
-        self.codec = DataField(codec) | EnumAnnotation("Codec")
-        self.min_distance = DataField(min_distance) | NumberAnnotation("Min Distance")
-        self.max_distance = DataField(max_distance) | NumberAnnotation("Max Distance")
+        self.codec = DataField(codec) | dui.Enum("Codec")
+        self.min_distance = DataField(min_distance) | dui.Number("Min Distance")
+        self.max_distance = DataField(max_distance) | dui.Number("Max Distance")
 
         def codec_changed(c):
             self.depth_codec = c.value()
