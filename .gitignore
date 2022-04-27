@@ -134,3 +134,4 @@ dmypy.json
 recordings/**/*.mp4
 recordings/**/*.mov
 config/**/*.ini
+.DS_Store

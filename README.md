@@ -12,6 +12,13 @@ After that install all dependencies:
 pip install -r requirements.txt
 ```
 
+#### Apple Silicon (amd64)
+To install the package on Apple silicon macs with an amd64 CPU you currently have to install the llvm package first regarding [this thread](https://numba.discourse.group/t/wheels-for-apple-silicon-m1/1282).
+
+```
+pip install -i https://pypi.anaconda.org/numba/label/wheels_experimental_m1/simple llvmlite
+```
+
 ### Usage
 Simply run the `spacestream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
 

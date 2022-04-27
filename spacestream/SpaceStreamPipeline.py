@@ -8,11 +8,11 @@ import cv2
 import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
-from simbi.model.DataField import DataField
-from simbi.ui.annotations import NumberAnnotation
-from simbi.ui.annotations.BooleanAnnotation import BooleanAnnotation
-from simbi.ui.annotations.EnumAnnotation import EnumAnnotation
-from simbi.ui.annotations.TextAnnotation import TextAnnotation
+from duit.model.DataField import DataField
+from duit.ui.annotations import NumberAnnotation
+from duit.ui.annotations.BooleanAnnotation import BooleanAnnotation
+from duit.ui.annotations.EnumAnnotation import EnumAnnotation
+from duit.ui.annotations.TextAnnotation import TextAnnotation
 
 from spacestream.codec.DepthCodec import DepthCodec
 from spacestream.codec.DepthCodecType import DepthCodecType

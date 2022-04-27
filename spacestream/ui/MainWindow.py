@@ -7,8 +7,8 @@ import cv2
 import numpy as np
 import open3d as o3d
 from open3d.visualization import gui
-from simbi.ui.open3d.Open3dPropertyRegistry import init_open3d_registry
-from simbi.ui.open3d.PropertyPanel import PropertyPanel
+from duit.ui.open3d.Open3dPropertyRegistry import init_open3d_registry
+from duit.ui.open3d.PropertyPanel import PropertyPanel
 
 from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
 from spacestream.codec.LinearCodec import LinearCodec
@@ -34,7 +34,7 @@ class MainWindow:
 
         # settings panel
         self.settings_panel_width = 18 * self.em  # 15 ems wide
-        self.settings_panel = PropertyPanel(0, gui.Margins(0.25 * self.em))
+        self.settings_panel = PropertyPanel()
         self.settings_panel.data_context = pipeline
         self.window.add_child(self.settings_panel)
 
