@@ -13,6 +13,7 @@ import duit.ui as dui
 
 from spacestream.codec.DepthCodec import DepthCodec
 from spacestream.codec.DepthCodecType import DepthCodecType
+from spacestream.codec.InverseHueColorization import InverseHueColorization
 from spacestream.fbs import FrameBufferSharingServer
 
 
@@ -54,7 +55,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.intrinsics_focal = DataField("-")
         self.normalize_intrinsics = DataField(True)
 
-        def _request_intrinsics_update(value):
+        def _request_intrinsics_update(value: bool):
             self._intrinsic_update_requested = True
 
         if isinstance(input, vg.DepthBuffer):
@@ -197,8 +198,21 @@ class SpaceStreamPipeline(vg.BaseGraph):
             if self.use_midas:
                 depth = pow(2, 16) - depth
 
-            # read depth map and create rgb-d image
+            # check pre-conditions (move them to the changing side)
+            if isinstance(self.depth_codec, InverseHueColorization) and self.min_distance.value <= 0.0:
+                logging.warning("Inverse Hue Colorization needs min-range to be higher than 0.0")
+                self.min_distance.value = 0.1
 
+            if self.min_distance.value < 0.0:
+                self.min_distance.value = 0.0
+
+            if self.max_distance.value == 0.0:
+                self.max_distance.value = 0.1
+
+            if self.min_distance.value >= self.max_distance.value:
+                self.min_distance.value = self.max_distance.value - 0.1
+
+            # read depth map and create rgb-d image
             min_value = round(self.min_distance.value / self.depth_units)
             max_value = round(self.max_distance.value / self.depth_units)
 

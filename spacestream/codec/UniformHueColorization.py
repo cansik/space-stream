@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit, prange
 
-from spacestream.codec import ENABLE_FAST_MATH, ENABLE_PARALLEL
+from spacestream.codec import ENABLE_FAST_MATH, ENABLE_PARALLEL, InvalidRangeException
 from spacestream.codec.DepthCodec import DepthCodec
 
 INDEPENDENT_VALUES = 1529
@@ -22,7 +22,7 @@ class UniformHueColorization(DepthCodec):
 
         # check divide by zero
         if self.inverse_transform and (d_min == 0 or d_max == 0):
-            raise Exception(f"Hue Codec: d_min ({d_min}) and d_max ({d_max}) are not allowed to be 0.")
+            raise InvalidRangeException(f"Hue Codec: d_min ({d_min}) and d_max ({d_max}) are not allowed to be 0.")
 
         self._pencode(depth, self.encode_buffer, d_min, d_max, self.inverse_transform)
         return self.encode_buffer
@@ -95,7 +95,7 @@ class UniformHueColorization(DepthCodec):
 
         # check divide by zero
         if self.inverse_transform and (d_min == 0 or d_max == 0):
-            raise Exception(f"Hue Codec: d_min ({d_min}) and d_max ({d_max}) are not allowed to be 0.")
+            raise InvalidRangeException(f"Hue Codec: d_min ({d_min}) and d_max ({d_max}) are not allowed to be 0.")
 
         self._pdecode(depth.astype(np.uint16), self.decode_buffer, d_min, d_max, self.inverse_transform)
         return self.decode_buffer
