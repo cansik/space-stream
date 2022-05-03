@@ -1,4 +1,4 @@
-# Space Stream
+# Space Stream [![PyPI](https://img.shields.io/pypi/v/space-stream)](https://pypi.org/project/space-stream/)
 Send RGB-D images over spout / syphon with visiongraph.
 
 ![Example Map](images/space-stream-ui.jpg)
@@ -21,7 +21,7 @@ pip install -i https://pypi.anaconda.org/numba/label/wheels_experimental_m1/simp
 ```
 
 ### Usage
-Simply run the `spacestream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
+Simply run the `space-stream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
 
 ```
 python -m spacestream --input realsense
@@ -55,7 +55,7 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 ```
 usage: spacestream [-h] [-c CONFIG]
                    [--loglevel {critical,error,warning,info,debug}]
-                   [--input video-capture,image,realsense,azure]
+                   [--input video-capture,image,realsense]
                    [--input-size width height] [--input-fps INPUT_FPS]
                    [--input-rotate 90,-90,180] [--input-flip h,v]
                    [--raw-input] [--channel CHANNEL] [--input-skip INPUT_SKIP]
@@ -64,21 +64,16 @@ usage: spacestream [-h] [-c CONFIG]
                    [--gain GAIN] [--white-balance WHITE_BALANCE]
                    [--rs-serial RS_SERIAL] [--rs-json RS_JSON]
                    [--rs-play-bag RS_PLAY_BAG] [--rs-record-bag RS_RECORD_BAG]
-                   [--rs-disable-emitter]
+                   [--rs-disable-emitter] [--rs-bag-offline]
                    [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
                    [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
-                   [--k4a-align] [--k4a-device K4A_DEVICE]
-                   [--k4a-play-mkv K4A_PLAY_MKV]
-                   [--k4a-record-mkv K4A_RECORD_MKV]
-                   [--k4a-depth-mode OFF,NFOV_2X2BINNED,NFOV_UNBINNED,WFOV_2X2BINNED,WFOV_UNBINNED,PASSIVE_IR]
-                   [--k4a-color-resolution OFF,RES_720P,RES_1080P,RES_1440P,RES_1536P,RES_2160P,RES_3072P]
-                   [--k4a-color-format COLOR_MJPG,COLOR_NV12,COLOR_YUY2,COLOR_BGRA32,DEPTH16,IR16,CUSTOM8,CUSTOM16,CUSTOM]
                    [--midas] [--mask]
-                   [--segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800]
+                   [--segnet mediapipe,mediapipe-light,mediapipe-heavy]
                    [--codec Linear,UniformHue,InverseHue]
                    [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
-                   [--no-parallel] [--no-fastmath] [--stream-name STREAM_NAME]
-                   [--no-filter] [--no-preview] [--record] [--view-pcd]
+                   [--use-parallel] [--no-fastmath]
+                   [--stream-name STREAM_NAME] [--no-filter] [--no-preview]
+                   [--record] [--view-pcd] [--view-3d]
 
 RGB-D framebuffer sharing demo for visiongraph.
 
@@ -91,7 +86,7 @@ optional arguments:
                         default=warning
 
 input provider:
-  --input video-capture,image,realsense,azure
+  --input video-capture,image,realsense
                         Image input provider, default: video-capture.
   --input-size width height
                         Requested input media size.
@@ -127,29 +122,16 @@ input provider:
   --rs-record-bag RS_RECORD_BAG
                         Path to a bag file to store the current recording.
   --rs-disable-emitter  Disable RealSense IR emitter.
+  --rs-bag-offline      Disable realtime bag playback.
   --rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]
                         RealSense depth filter.
   --rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern
                         Color scheme for depth map, default: WhiteToBlack.
-  --k4a-align           Align azure frames to depth frame.
-  --k4a-device K4A_DEVICE
-                        Azure device id.
-  --k4a-play-mkv K4A_PLAY_MKV
-                        Path to a pre-recorded bag file for playback.
-  --k4a-record-mkv K4A_RECORD_MKV
-                        Path to a mkv file to store the current recording.
-  --k4a-depth-mode OFF,NFOV_2X2BINNED,NFOV_UNBINNED,WFOV_2X2BINNED,WFOV_UNBINNED,PASSIVE_IR
-                        Azure depth mode, default: NFOV_UNBINNED.
-  --k4a-color-resolution OFF,RES_720P,RES_1080P,RES_1440P,RES_1536P,RES_2160P,RES_3072P
-                        Azure color resolution (overwrites input-size),
-                        default: RES_720P.
-  --k4a-color-format COLOR_MJPG,COLOR_NV12,COLOR_YUY2,COLOR_BGRA32,DEPTH16,IR16,CUSTOM8,CUSTOM16,CUSTOM
-                        Azure color image format, default: COLOR_BGRA32.
   --midas               Use midas for depth capture.
 
 masking:
   --mask                Apply mask by segmentation algorithm.
-  --segnet mediapipe,mediapipe-light,mediapipe-heavy,maskrcnn,maskrcnn-eff-480,maskrcnn-eff-608,maskrcnn-res50-768,maskrcnn-res101-800
+  --segnet mediapipe,mediapipe-light,mediapipe-heavy
                         Segmentation Network, default: mediapipe.
 
 depth codec:
@@ -162,7 +144,7 @@ depth codec:
                         Max distance to perceive by the camera.
 
 performance:
-  --no-parallel         Disable parallel for codec operations.
+  --use-parallel        Enable parallel for codec operations.
   --no-fastmath         Disable fastmath for codec operations.
 
 output:
@@ -173,7 +155,14 @@ debug:
   --no-filter           Disable realsense image filter.
   --no-preview          Disable preview to speed.
   --record              Record output into recordings folder.
-  --view-pcd            Display PCB preview.
+  --view-pcd            Display PCB preview (deprecated, use --view-3d).
+  --view-3d             Display PCB preview.
+
+Args that start with '--' (eg. --loglevel) can also be set in a config file
+(specified via -c). Config file syntax allows: key=value, flag=true,
+stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). If an arg is
+specified in more than one place, then commandline values override config file
+values which override defaults.
 ```
 
 ### About
