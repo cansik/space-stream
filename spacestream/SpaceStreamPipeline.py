@@ -54,12 +54,15 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.intrinsics_focal = DataField("-")
         self.normalize_intrinsics = DataField(True)
 
+        def _request_intrinsics_update(value):
+            self._intrinsic_update_requested = True
+
         if isinstance(input, vg.DepthBuffer):
             self.intrinsics_res | dui.Text("Resolution")
             self.intrinsics_principle | dui.Text("Principle Point")
             self.intrinsics_focal | dui.Text("Focal Point")
             self.normalize_intrinsics | dui.Boolean("Normalize Intrinsics")
-            self.normalize_intrinsics.on_changed += self._request_intrinsic_update()
+            self.normalize_intrinsics.on_changed += _request_intrinsics_update
 
         self.depth_codec: DepthCodec = codec.value()
         self.codec = DataField(codec) | dui.Enum("Codec")
@@ -137,9 +140,6 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self.intrinsics_focal.value = "-"
 
         return True
-
-    def _request_intrinsic_update(self):
-        self._intrinsic_update_requested = True
 
     def _init(self):
         super()._init()
@@ -224,7 +224,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
             # just send rgb image for testing
             rgbd = frame
 
-        if self._update_intrinsics:
+        if self._intrinsic_update_requested:
             success = self._update_intrinsics(frame)
             self._intrinsic_update_requested = not success
 
