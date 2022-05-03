@@ -63,8 +63,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.depth_codec: DepthCodec = codec.value()
         self.codec = DataField(codec) | dui.Enum("Codec")
-        self.min_distance = DataField(min_distance) | dui.Number("Min Distance")
-        self.max_distance = DataField(max_distance) | dui.Number("Max Distance")
+        self.min_distance = DataField(float(min_distance)) | dui.Number("Min Distance")
+        self.max_distance = DataField(float(max_distance)) | dui.Number("Max Distance")
 
         def codec_changed(c):
             self.depth_codec = c.value()
