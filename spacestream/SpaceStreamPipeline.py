@@ -101,12 +101,16 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.add_nodes(self.input)
 
-    def _update_intrinsics(self, frame: np.ndarray):
+    def _update_intrinsics(self, frame: np.ndarray) -> bool:
         h, w = frame.shape[:2]
         self.intrinsics_res.value = f"{w} x {h}"
 
         if isinstance(self.input, vg.BaseDepthCamera):
-            intrinsics = self.input.camera_matrix
+            try:
+                intrinsics = self.input.camera_matrix
+            except Exception as ex:
+                print(f"Intrinsics could not be read: {ex}")
+                return False
 
             ppx = intrinsics[0, 2]
             ppy = intrinsics[1, 2]
@@ -131,6 +135,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
         else:
             self.intrinsics_principle.value = "-"
             self.intrinsics_focal.value = "-"
+
+        return True
 
     def _request_intrinsic_update(self):
         self._intrinsic_update_requested = True
@@ -219,8 +225,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
             rgbd = frame
 
         if self._update_intrinsics:
-            self._intrinsic_update_requested = False
-            self._update_intrinsics(frame)
+            success = self._update_intrinsics(frame)
+            self._intrinsic_update_requested = not success
 
         if threading.current_thread() is threading.main_thread():
             # send rgb-d over spout
