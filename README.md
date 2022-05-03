@@ -9,7 +9,7 @@ It is recommended to use `Python 3.8` or higher and should run on any OS. First 
 After that install all dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install space-stream
 ```
 
 #### Apple Silicon (amd64)
@@ -18,6 +18,13 @@ To install the package on Apple silicon macs with an amd64 CPU you currently hav
 ```
 pip install "numpy==1.21.*" importlib-metadata # manually install dependencies
 pip install -i https://pypi.anaconda.org/numba/label/wheels_experimental_m1/simple numba
+```
+
+### Development
+To develop with this project, install the dependencies from the requirements:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ### Usage
