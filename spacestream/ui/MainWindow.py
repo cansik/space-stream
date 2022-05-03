@@ -211,14 +211,18 @@ class MainWindow:
         gui.Application.instance.post_to_main_thread(self.window, update)
 
     def create_3d_cloud(self, frame):
+        if not isinstance(self.pipeline.input, vg.BaseDepthCamera):
+            return
+
         h, tw = frame.shape[:2]
         w = tw // 2
 
         # settings
         # read necessary data for visualisation
         extrinsics = o3d.core.Tensor.eye(4, dtype=o3d.core.Dtype.Float32)
+
         intrinsic_matrix = o3d.core.Tensor(
-            self.pipeline.get_intrinsics(),
+            self.pipeline.input.camera_matrix,
             dtype=o3d.core.Dtype.Float32)
         depth_max = self.pipeline.max_distance.value  # m
         pcd_stride = self.pcl_stride.int_value  # downsample point cloud, may increase frame rate
