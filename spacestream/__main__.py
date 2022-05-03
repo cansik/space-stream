@@ -48,7 +48,7 @@ def parse_args():
     depth_group.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
 
     performance_group = parser.add_argument_group("performance")
-    performance_group.add_argument("--no-parallel", action="store_true", help="Disable parallel for codec operations.")
+    performance_group.add_argument("--use-parallel", action="store_true", help="Enable parallel for codec operations.")
     performance_group.add_argument("--no-fastmath", action="store_true", help="Disable fastmath for codec operations.")
 
     output_group = parser.add_argument_group("output")
@@ -72,8 +72,8 @@ def main():
     args = parse_args()
     vg.setup_logging(args.loglevel)
 
-    if args.no_parallel:
-        codec.ENABLE_PARALLEL = False
+    if args.use_parallel:
+        codec.ENABLE_PARALLEL = True
 
     if args.no_fastmath:
         codec.ENABLE_FAST_MATH = False
