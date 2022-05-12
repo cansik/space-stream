@@ -50,6 +50,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.encoding_time = DataField("-") | dui.Text("Encoding Time", readonly=True)
         self.disable_preview = DataField(False) | dui.Boolean("Disable Preview")
 
+        self.serial_number = DataField("-")
         self.intrinsics_res = DataField("-")
         self.intrinsics_principle = DataField("-")
         self.intrinsics_focal = DataField("-")
@@ -58,7 +59,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
         def _request_intrinsics_update(value: bool):
             self._intrinsic_update_requested = True
 
-        if isinstance(input, vg.DepthBuffer):
+        if isinstance(input, vg.BaseDepthCamera):
+            self.serial_number | dui.Text("Serial")
             self.intrinsics_res | dui.Text("Resolution")
             self.intrinsics_principle | dui.Text("Principle Point")
             self.intrinsics_focal | dui.Text("Focal Point")
@@ -148,6 +150,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
         if threading.current_thread() is threading.main_thread():
             self.fbs_client.setup()
 
+        if isinstance(self.input, vg.BaseDepthCamera):
+            self.serial_number.value = self.input.serial
+            logging.info(f"Device Serial: {self.input.serial}")
+
         # set colorizer min and max settings
         if isinstance(self.input, vg.RealSenseInput):
             if not self.use_midas:
@@ -160,8 +166,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
             calibration = self.input.device.calibration
             mat = calibration.get_camera_matrix(CalibrationType.DEPTH)
-
-            logging.info(f"Serial: {self.input.device.serial}")
+            print(mat)
 
     def _process(self):
         ts, frame = self.input.read()
