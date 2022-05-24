@@ -3,9 +3,9 @@ configargparse
 pyopengl
 
 # visiongraph
-onnxruntime; platform_system != "Darwin" and platform.machine != 'arm64'
-visiongraph[numba]>=0.1.22.2; platform_system != "Darwin" and platform.machine != 'arm64'
-visiongraph[realsense, azure, mediapipe, openvino]>=0.1.22.2
+onnxruntime; platform_system != "Darwin" and platform.machine != "arm64"
+visiongraph[numba]>=0.1.23.4; platform_system != "Darwin" and platform.machine != "arm64"
+visiongraph[realsense, azure, mediapipe, openvino]>=0.1.23.4
 
 # gui related
 open3d
