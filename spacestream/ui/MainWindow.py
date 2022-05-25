@@ -127,12 +127,24 @@ class MainWindow:
             self.pipeline_view.window = self.window
             self.window.add_child(self.pipeline_view.pcdview)
 
+        self.restart_pipeline_button = gui.Button("Restart Pipeline")
+        self.restart_pipeline_button.set_on_clicked(self._on_restart_clicked)
+        self.settings_panel.add_child(self.restart_pipeline_button)
+        self.window.add_child(self.settings_panel)
+
         # start pipeline
         pipeline.fbs_client.setup()
         pipeline.open()
 
     def _signal_handler(self, signal, frame):
         self.window.close()
+
+    def _on_restart_clicked(self):
+        self.pipeline.close()
+        self.pipeline.fbs_client.release()
+
+        self.pipeline.fbs_client.setup()
+        self.pipeline.open()
 
     def _on_pipeline_exception(self, pipeline, ex):
         # display error message in console
