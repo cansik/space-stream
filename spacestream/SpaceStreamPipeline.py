@@ -60,10 +60,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self._intrinsic_update_requested = True
 
         if isinstance(input, vg.BaseDepthCamera):
-            self.serial_number | dui.Text("Serial")
-            self.intrinsics_res | dui.Text("Resolution")
-            self.intrinsics_principle | dui.Text("Principle Point")
-            self.intrinsics_focal | dui.Text("Focal Point")
+            self.serial_number | dui.Text("Serial", readonly=True, copy_content=True)
+            self.intrinsics_res | dui.Text("Resolution", readonly=True, copy_content=True)
+            self.intrinsics_principle | dui.Text("Principle Point", readonly=True, copy_content=True)
+            self.intrinsics_focal | dui.Text("Focal Point", readonly=True, copy_content=True)
             self.normalize_intrinsics | dui.Boolean("Normalize Intrinsics")
             self.normalize_intrinsics.on_changed += _request_intrinsics_update
 
