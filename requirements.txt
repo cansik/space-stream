@@ -3,13 +3,11 @@ configargparse
 pyopengl
 
 # visiongraph
-onnxruntime; platform_system != "Darwin" and platform.machine != "arm64"
-visiongraph[numba]>=0.1.23.4; platform_system != "Darwin" and platform.machine != "arm64"
-visiongraph[realsense, azure, mediapipe, openvino]>=0.1.23.4
+visiongraph[realsense, azure, mediapipe, openvino, numba, onnxruntime]>=0.1.23.4
 
 # gui related
 open3d
-duit[all]==0.1.0
+duit[all]>=0.1.2
 
 # macos
 syphonpy; platform_system == "Darwin"
