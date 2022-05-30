@@ -3,7 +3,7 @@ configargparse
 pyopengl
 
 # visiongraph
-visiongraph[realsense, azure, mediapipe, openvino, numba, onnxruntime]>=0.1.23.7
+visiongraph[realsense, azure, mediapipe, openvino, numba, onnxruntime, media]>=0.1.24
 
 # gui related
 open3d

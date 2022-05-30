@@ -15,7 +15,7 @@ long_description = (current_dir / "README.md").read_text()
 
 setup(
     name=NAME,
-    version='0.1.3',
+    version='0.1.4',
     packages=required_packages,
     entry_points={
         'console_scripts': [
