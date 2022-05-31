@@ -49,6 +49,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.pipeline_fps = DataField("-") | dui.Text("Pipeline FPS", readonly=True)
         self.encoding_time = DataField("-") | dui.Text("Encoding Time", readonly=True)
         self.disable_preview = DataField(False) | dui.Boolean("Disable Preview")
+        self.record = DataField(record) | dui.Boolean("Record")
 
         self.serial_number = DataField("-")
         self.intrinsics_res = DataField("-")
@@ -77,8 +78,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         self.codec.on_changed += codec_changed
 
-        self.record = record
-        self.recorder: Optional[vg.CV2VideoRecorder] = None
+        self.recorder: Optional[vg.VidGearVideoRecorder] = None
+        self.crf: int = 23
 
         self.show_preview = True
 
@@ -175,14 +176,18 @@ class SpaceStreamPipeline(vg.BaseGraph):
             return
 
         # start recording
-        if self.record and self.recorder is None:
-            h, w = frame.shape[:2]
-            rw = w * 2
-            rh = h
+        if self.record.value and self.recorder is None:
             time_str = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
             output_file_path = f"recordings/{self.stream_name}-{time_str}.mp4"
-            self.recorder = vg.CV2VideoRecorder(rw, rh, output_file_path, fps=self.input.fps)
+            self.recorder = vg.VidGearVideoRecorder(output_file_path, fps=self.input.fps)
+            self.recorder.output_params.update({
+                "-crf": self.crf,
+                "-input_framerate": round(self.fps_tracer.smooth_fps)
+            })
             self.recorder.open()
+        elif not self.record.value and self.recorder is not None:
+            self.recorder.close()
+            self.recorder = None
 
         if self.masking:
             segmentations: List[vg.InstanceSegmentationResult] = self.segmentation_network.process(frame)
@@ -253,7 +258,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self.fbs_client.send(bgrd)
 
         if self.record and self.recorder is not None:
-            self.recorder.add_image(bgrd)
+            self.recorder.add_image(rgbd)
 
         if not self.disable_preview.value and self.on_frame_ready is not None:
             self.on_frame_ready(rgbd)
@@ -268,7 +273,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
             self.fbs_client.release()
 
         super()._release()
-        if self.record and self.recorder is not None:
+        if self.record.value and self.recorder is not None:
             self.recorder.close()
 
     @staticmethod
@@ -282,3 +287,5 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
     def configure(self, args: argparse.Namespace):
         super().configure(args)
+
+        self.crf = args.record_crf
