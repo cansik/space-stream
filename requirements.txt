@@ -14,4 +14,4 @@ syphonpy; platform_system == "Darwin"
 glfw; platform_system == "Darwin"
 
 # windows
-SpoutGL>=0.0.3; platform_system == "Windows"
+SpoutGL>=0.0.2; platform_system == "Windows"
