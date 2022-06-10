@@ -43,7 +43,8 @@ def parse_args():
                                 help="Segmentation Network", add_params=False)
 
     depth_group = parser.add_argument_group("depth codec")
-    vg.add_enum_choice_argument(depth_group, DepthCodecType, "--codec", help="Codec how the depth map will be encoded.")
+    vg.add_enum_choice_argument(depth_group, DepthCodecType, "--codec",
+                                help="Codec how the depth map will be encoded.", default=DepthCodecType.UniformHue)
     depth_group.add_argument("--min-distance", type=float, default=0, help="Min distance to perceive by the camera.")
     depth_group.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
 

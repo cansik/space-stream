@@ -4,6 +4,7 @@ pyopengl
 
 # visiongraph
 visiongraph[realsense, azure, mediapipe, openvino, numba, onnx, media]>=0.1.24
+protobuf<=3.20.1
 
 # gui related
 open3d
@@ -14,4 +15,4 @@ syphonpy; platform_system == "Darwin"
 glfw; platform_system == "Darwin"
 
 # windows
-SpoutGL>=0.0.2; platform_system == "Windows"
+SpoutGL==0.0.2; platform_system == "Windows"

@@ -29,7 +29,7 @@ def ease_out_quad(x):
 class SpaceStreamPipeline(vg.BaseGraph):
 
     def __init__(self, stream_name: str, input: vg.BaseInput, fbs_client: FrameBufferSharingServer,
-                 codec: DepthCodecType = DepthCodecType.Linear,
+                 codec: DepthCodecType = DepthCodecType.UniformHue,
                  min_distance: float = 0, max_distance: float = 6,
                  record: bool = False, masking: bool = False,
                  segnet: Optional[vg.InstanceSegmentationEstimator] = None, use_midas: bool = False,
