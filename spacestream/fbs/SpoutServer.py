@@ -28,6 +28,10 @@ class SpoutServer(FrameBufferSharingServer):
 
         success = self.ctx.sendImage(frame, w, h, GL.GL_RGBA, False, 0)
 
+        # This fixes the CPU receiver (first frame is discarded)
+        # More information: https://github.com/jlai/Python-SpoutGL/issues/15
+        self.ctx.setCPUshare(True)
+
         if not success:
             logging.warning("Could not send spout image.")
             return

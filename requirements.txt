@@ -3,17 +3,17 @@ configargparse
 pyopengl
 
 # visiongraph
-visiongraph[realsense, azure, mediapipe, openvino, numba, onnx, media]>=0.1.25
+visiongraph[realsense, azure, mediapipe, openvino, numba, onnx, media]>=0.1.26
 protobuf<=3.20.1
 numpy<=1.22.4
 
 # gui related
 open3d
-duit[all]>=0.1.2
+duit[all]>=0.1.2.1
 
 # macos
 syphonpy; platform_system == "Darwin"
 glfw; platform_system == "Darwin"
 
 # windows
-SpoutGL==0.0.2; platform_system == "Windows"
+SpoutGL>=0.0.3; platform_system == "Windows"
