@@ -19,7 +19,7 @@ setup(
     packages=required_packages,
     entry_points={
         'console_scripts': [
-            'space-stream = spacestream.__main__:main',
+            'spacestream = spacestream.__main__:main',
         ],
     },
     url='https://github.com/cansik/space-stream',
