@@ -12,32 +12,30 @@ After that install all dependencies:
 pip install space-stream
 ```
 
-#### Apple Silicon (amd64)
-To install the package on Apple silicon macs with an amd64 CPU you currently have to install the llvm package first regarding [this thread](https://numba.discourse.group/t/wheels-for-apple-silicon-m1/1282).
-
-```
-pip install "numpy==1.21.*" importlib-metadata # manually install dependencies
-pip install -i https://pypi.anaconda.org/numba/label/wheels_experimental_m1/simple numba
-```
-
-### Development
-To develop with this project, install the dependencies from the requirements:
-
-```bash
-pip install -r requirements.txt
-```
-
 ### Usage
-Simply run the `space-stream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
+Simply run the `spacestream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
 
 ```
-python -m spacestream --input realsense
+spacestream --input realsense
 ```
 
 To use the Azure Kinect use the `azure` input type:
 
 ```
-python -m spacestream --input azure
+spacestream --input azure
+```
+
+### Development
+To develop with this project, clone the git repository and install the dependencies from the requirements:
+
+```bash
+pip install -r requirements.txt
+```
+
+To call the module directly, use the `-m` command from python:
+
+```
+python -m spacestream
 ```
 
 #### Depth Codec
