@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import setup, find_packages
 
-NAME = 'space-stream'
+NAME = 'spacestream'
 
 required_packages = find_packages()
 

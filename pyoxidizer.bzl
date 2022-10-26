@@ -7,37 +7,29 @@ def make_exe():
     # Make the embedded interpreter behave like a `python` process.
     python_config.config_profile = "python"
 
+    # policy.set_resource_handling_mode("files")
     python_config.filesystem_importer = True
 
-    # Run a Python module as __main__ when the interpreter starts.
     python_config.run_module = "spacestream"
 
     exe = dist.to_python_executable(
-        name="space-stream",
+        name="spacestream",
         packaging_policy=policy,
         config=python_config,
     )
 
-    exe.windows_runtime_dlls_mode = "when-present"
-
-    # Copy Windows runtime DLLs next to the build executable and error if this
-    # cannot be done.
-    # exe.windows_runtime_dlls_mode = "always"
-
-    # Make the executable a console application on Windows.
+    exe.windows_runtime_dlls_mode = "always"
     exe.windows_subsystem = "console"
 
-    # Make the executable a non-console application on Windows.
-    # exe.windows_subsystem = "windows"
+    exe.add_python_resources(exe.pip_install(["wheel"]))
 
-    exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"]))
+    for resource in exe.pip_install(["-r", "requirements.txt"]):
+        resource.add_location = "filesystem-relative:lib"
+        exe.add_python_resource(resource)
 
-    # Filter all resources collected so far through a filter of names
-    # in a file.
-    #exe.filter_resources_from_files(files=["/path/to/filter-file"])
+    # exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"]))
+    exe.add_python_resources(exe.pip_install(["."]))
 
-    # Return our `PythonExecutable` instance so it can be built and
-    # referenced by other consumers of this target.
     return exe
 
 def make_embedded_resources(exe):
@@ -58,13 +50,13 @@ def make_msi(exe):
     # .msi installer when it is built.
     return exe.to_wix_msi_builder(
         # Simple identifier of your app.
-        "myapp",
+        "ch.zhdk.ias.spacestream",
         # The name of your application.
-        "My Application",
+        "SpaceStream",
         # The version of your application.
-        "1.0",
+        "0.1.5",
         # The author/manufacturer of your application.
-        "Alice Jones"
+        "Immersive Arts Space"
     )
 
 
