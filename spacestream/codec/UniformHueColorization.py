@@ -6,6 +6,7 @@ from spacestream.codec.DepthCodec import DepthCodec
 
 INDEPENDENT_VALUES = 1529
 
+print(f"PARALLEL FLAG: {ENABLE_PARALLEL}")
 
 class UniformHueColorization(DepthCodec):
     """

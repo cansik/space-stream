@@ -2,6 +2,7 @@ import logging
 from functools import partial
 
 import configargparse
+import numba
 from visiongraph.input import add_input_step_choices
 
 from spacestream import codec
@@ -50,6 +51,7 @@ def parse_args():
 
     performance_group = parser.add_argument_group("performance")
     performance_group.add_argument("--use-parallel", action="store_true", help="Enable parallel for codec operations.")
+    performance_group.add_argument("--num-threads", type=int, default=4, help="Number of threads for parallelization.")
     performance_group.add_argument("--no-fastmath", action="store_true", help="Disable fastmath for codec operations.")
 
     output_group = parser.add_argument_group("output")
@@ -75,6 +77,8 @@ def main():
     vg.setup_logging(args.loglevel)
 
     if args.use_parallel:
+        num_threads = min(numba.config.NUMBA_NUM_THREADS, args.num_threads)
+        numba.set_num_threads(num_threads)
         codec.ENABLE_PARALLEL = True
 
     if args.no_fastmath:
