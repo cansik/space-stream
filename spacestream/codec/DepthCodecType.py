@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import partial
 
 from spacestream.codec.RealSenseColorizer import RealSenseColorizer
 
@@ -19,7 +20,7 @@ def _init_inverse_hue():
 
 
 class DepthCodecType(Enum):
-    Linear = _init_linear_codec
-    UniformHue = _init_uniform_hue
-    InverseHue = _init_inverse_hue
+    Linear = partial(_init_linear_codec)
+    UniformHue = partial(_init_uniform_hue)
+    InverseHue = partial(_init_inverse_hue)
     RSColorizer = RealSenseColorizer

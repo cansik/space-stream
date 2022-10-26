@@ -7,9 +7,7 @@ from visiongraph.input import add_input_step_choices
 
 from spacestream import codec
 from spacestream.codec.DepthCodecType import DepthCodecType
-from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
 from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
-from spacestream.ui.MainWindow import MainWindow
 
 import visiongraph as vg
 import pyrealsense2 as rs
@@ -50,7 +48,7 @@ def parse_args():
     depth_group.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
 
     performance_group = parser.add_argument_group("performance")
-    performance_group.add_argument("--use-parallel", action="store_true", help="Enable parallel for codec operations.")
+    performance_group.add_argument("--parallel", action="store_true", help="Enable parallel for codec operations.")
     performance_group.add_argument("--num-threads", type=int, default=4, help="Number of threads for parallelization.")
     performance_group.add_argument("--no-fastmath", action="store_true", help="Disable fastmath for codec operations.")
 
@@ -76,10 +74,11 @@ def main():
     args = parse_args()
     vg.setup_logging(args.loglevel)
 
-    if args.use_parallel:
+    if args.parallel:
         num_threads = min(numba.config.NUMBA_NUM_THREADS, args.num_threads)
         numba.set_num_threads(num_threads)
         codec.ENABLE_PARALLEL = True
+        logging.warning(f"Enable parallel with {num_threads} threads")
 
     if args.no_fastmath:
         codec.ENABLE_FAST_MATH = False
@@ -104,6 +103,7 @@ def main():
     show_ui = not args.no_preview
 
     # run pipeline
+    from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
     pipeline = SpaceStreamPipeline(args.stream_name, args.input(), fbs_client, args.codec,
                                    args.min_distance, args.max_distance,
                                    args.record, args.mask, args.segnet(), args.midas,
@@ -114,6 +114,7 @@ def main():
         app = o3d.visualization.gui.Application.instance
         app.initialize()
 
+        from spacestream.ui.MainWindow import MainWindow
         win = MainWindow(pipeline, args)
         app.run()
     else:

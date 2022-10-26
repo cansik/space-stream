@@ -1,7 +1,9 @@
 import argparse
+import json
 import logging
 import threading
 from datetime import datetime
+from pathlib import Path
 from typing import Callable, Optional, List
 
 import cv2
@@ -186,6 +188,19 @@ class SpaceStreamPipeline(vg.BaseGraph):
                 "-input_framerate": round(self.fps_tracer.smooth_fps)
             })
             self.recorder.open()
+
+            # write recording parameters
+            with open(Path(output_file_path).with_suffix(".json"), "w") as f:
+                json.dump({
+                    "serial": self.serial_number.value,
+                    "resolution": self.intrinsics_res.value,
+                    "principle": self.intrinsics_principle.value,
+                    "focal": self.intrinsics_focal.value,
+                    "distance": {
+                        "min": self.min_distance.value,
+                        "max": self.max_distance.value
+                    }
+                }, f, indent=4)
         elif not self.record.value and self.recorder is not None:
             self.recorder.close()
             self.recorder = None
