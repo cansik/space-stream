@@ -1,3 +1,4 @@
+import distutils
 from pathlib import Path
 
 from setuptools import setup, find_packages
@@ -12,6 +13,21 @@ with open('requirements.txt') as f:
 # read readme
 current_dir = Path(__file__).parent
 long_description = (current_dir / "README.md").read_text()
+
+
+class Distribution(distutils.cmd.Command):
+    description = "Distribute with pyinstaller"
+    user_options = []
+
+    def run(self) -> None:
+        print("hello world")
+
+    def initialize_options(self) -> None:
+        pass
+
+    def finalize_options(self) -> None:
+        pass
+
 
 setup(
     name=NAME,
@@ -30,4 +46,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=required,
+    cmdclass={
+        "distribute": Distribution,
+    },
 )
