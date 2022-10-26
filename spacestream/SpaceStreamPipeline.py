@@ -18,6 +18,8 @@ from spacestream.codec.DepthCodecType import DepthCodecType
 from spacestream.codec.InverseHueColorization import InverseHueColorization
 from spacestream.codec.RealSenseColorizer import RealSenseColorizer
 from spacestream.fbs import FrameBufferSharingServer
+from spacestream.io.EnhancedJSONEncoder import EnhancedJSONEncoder
+from spacestream.io.StreamInformation import StreamInformation, StreamSize, Vector2, RangeValue
 
 
 def linear_interpolate(x):
@@ -59,6 +61,8 @@ class SpaceStreamPipeline(vg.BaseGraph):
         self.intrinsics_principle = DataField("-")
         self.intrinsics_focal = DataField("-")
         self.normalize_intrinsics = DataField(True)
+
+        self.stream_information = StreamInformation()
 
         def _request_intrinsics_update(value: bool):
             self._intrinsic_update_requested = True
@@ -142,6 +146,12 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
             self.intrinsics_principle.value = pp_str
             self.intrinsics_focal.value = f_str
+
+            self.stream_information.serial = self.input.serial
+            self.stream_information.resolution = StreamSize(w, h)
+            self.stream_information.intrinsics.principle = Vector2(ppx, ppy)
+            self.stream_information.intrinsics.focal = Vector2(fx, fy)
+            self.stream_information.distance = RangeValue(self.min_distance.value, self.max_distance.value)
         else:
             self.intrinsics_principle.value = "-"
             self.intrinsics_focal.value = "-"
@@ -191,16 +201,7 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
             # write recording parameters
             with open(Path(output_file_path).with_suffix(".json"), "w") as f:
-                json.dump({
-                    "serial": self.serial_number.value,
-                    "resolution": self.intrinsics_res.value,
-                    "principle": self.intrinsics_principle.value,
-                    "focal": self.intrinsics_focal.value,
-                    "distance": {
-                        "min": self.min_distance.value,
-                        "max": self.max_distance.value
-                    }
-                }, f, indent=4)
+                json.dump(self.stream_information, f, cls=EnhancedJSONEncoder, indent=4)
         elif not self.record.value and self.recorder is not None:
             self.recorder.close()
             self.recorder = None

@@ -204,6 +204,11 @@ class MainWindow:
                 else:
                     preview_image = self.pipeline.input.depth_map
 
+        if self.pipeline.record.value:
+            preview_image = bgrd.copy()
+            h, w = preview_image.shape[:2]
+            cv2.circle(preview_image, (w - 25, 25), 15, (255, 0, 0), -1)
+
         image = o3d.geometry.Image(preview_image)
 
         h, tw = bgrd.shape[:2]
