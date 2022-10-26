@@ -14,6 +14,7 @@ import duit.ui as dui
 from spacestream.codec.DepthCodec import DepthCodec
 from spacestream.codec.DepthCodecType import DepthCodecType
 from spacestream.codec.InverseHueColorization import InverseHueColorization
+from spacestream.codec.RealSenseColorizer import RealSenseColorizer
 from spacestream.fbs import FrameBufferSharingServer
 
 
@@ -227,7 +228,10 @@ class SpaceStreamPipeline(vg.BaseGraph):
             max_value = round(self.max_distance.value / self.depth_units)
 
             self.encoding_watch.start()
-            depth_map = self.depth_codec.encode(depth, min_value, max_value)
+            if isinstance(self.input, vg.RealSenseInput) and isinstance(self.depth_codec, RealSenseColorizer):
+                depth_map = self.depth_codec.encode(self.input.depth_frame, min_value, max_value)
+            else:
+                depth_map = self.depth_codec.encode(depth, min_value, max_value)
             self.encoding_watch.stop()
 
             # fix realsense image if it has been aligned to remove lines
@@ -262,9 +266,12 @@ class SpaceStreamPipeline(vg.BaseGraph):
 
         if not self.disable_preview.value and self.on_frame_ready is not None:
             self.on_frame_ready(rgbd)
+        else:
+            bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
+            self.fbs_client.send(bgrd)
 
         self.fps_tracer.update()
-        self.pipeline_fps.value = f"{self.fps_tracer.smooth_fps:.2f}"
+        self.pipeline_fps.value = f"{self.fps_tracer.fps:.2f}"
 
         self.encoding_time.value = f"{self.encoding_watch.average():.2f} ms"
 

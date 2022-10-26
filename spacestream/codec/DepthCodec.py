@@ -7,6 +7,7 @@ import numpy as np
 
 class DepthCodec(ABC):
     def __init__(self):
+
         self.encode_buffer: Optional[np.ndarray] = None
         self.decode_buffer: Optional[np.ndarray] = None
 
