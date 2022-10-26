@@ -3,12 +3,12 @@ configargparse
 pyopengl
 
 # visiongraph
-visiongraph[realsense, azure, mediapipe, openvino, numba, onnx, media]>=0.1.26
+visiongraph[realsense, azure, mediapipe, numba, onnx, media]>=0.1.30.4
 protobuf<=3.20.1
 numpy<=1.22.4
 
 # gui related
-open3d
+open3d==0.15.1
 duit[all]>=0.1.2.1
 
 # macos
