@@ -59,7 +59,7 @@ class Distribution(distutils.cmd.Command):
         system_name = sys.platform
         system_arch = platform.machine()
 
-        if sys.platform == "darwin" and self.macos_universal:
+        if sys.platform == "darwin" and self.macos_universal2:
             print("building universal binary")
             arguments.append("--target-arch")
             arguments.append("universal2")
@@ -73,7 +73,7 @@ class Distribution(distutils.cmd.Command):
 
     def initialize_options(self) -> None:
         self.zip = False
-        self.macos_universal = False
+        self.macos_universal2 = False
 
     def finalize_options(self) -> None:
         pass
