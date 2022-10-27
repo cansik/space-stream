@@ -1,0 +1,65 @@
+name: Distribute Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      publishReleases:
+        description: 'Publish to Releases'
+        required: false
+        default: 'true'
+
+#--macos-universal2
+jobs:
+  distribute:
+    runs-on: ${{ matrix.os.host }}
+    strategy:
+      matrix:
+        os:
+          - name: windows
+            host: windows-latest
+            args:
+
+          - name: macos
+            host: macos-12
+            args:
+
+          - name: ubuntu
+            host: ubuntu-latest
+            args:
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Get Library Version
+        id: get_version
+        run: |
+          echo "Library Version: $(python setup.py --version)"
+          echo "version=$(python setup.py --version)" >> $GITHUB_OUTPUT
+          echo "v_version=v$(python setup.py --version)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Build on ${{ matrix.os.name }}
+        run: |
+          echo "V-Version: ${{ steps.get_version.outputs.v_version }}"
+          pip install wheel
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+          
+          python setup.py distribute --zip ${{ matrix.os.args }}
+        shell: bash
+
+      # upload dist
+      - name: Upload binaries to release
+        if: ${{ github.event.inputs.publishReleases == 'true' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/*.zip
+          tag: ${{ steps.get_version.outputs.v_version }}
+          release_name: "Version ${{ steps.get_version.outputs.version }}"
+          body: "Prebuilt wheel packages version ${{ steps.get_version.outputs.version }}."
+          overwrite: true
+          file_glob: true

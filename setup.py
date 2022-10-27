@@ -1,4 +1,6 @@
 import distutils
+import platform
+import sys
 import zipfile
 from pathlib import Path
 from typing import Union
@@ -30,7 +32,10 @@ def zip_dir(dir: Union[Path, str], filename: Union[Path, str]):
 
 class Distribution(distutils.cmd.Command):
     description = "Distribute with pyinstaller"
-    user_options = []
+    user_options = [
+        ("zip", None, "Create a zip package"),
+        ("macos-universal2", None, "Create MacOS universal2 package")
+    ]
 
     def run(self) -> None:
         import PyInstaller.__main__
@@ -41,18 +46,42 @@ class Distribution(distutils.cmd.Command):
         o3d_resources_src = o3d_root.joinpath("resources")
         o3d_resources_dest = "open3d/resources"
 
-        PyInstaller.__main__.run([
+        # create arguments
+        delimiter = ";" if sys.platform.startswith("win") else ":"
+        arguments = [
             f"{NAME}/__main__.py",
             "--name", NAME,
-            "--add-data", f"{o3d_resources_src};{o3d_resources_dest}",
-            "--clean"
-        ])
+            "--add-data", f"{o3d_resources_src}{delimiter}{o3d_resources_dest}",
+            "--clean",
+            "-y"
+        ]
 
-        print("creating zip file...")
-        zip_dir(f"dist/{NAME}", f"dist/{NAME}.zip")
+        system_name = sys.platform
+        system_arch = platform.machine()
+
+        # correct system name
+        if system_name.startswith("linux"):
+            system_name = "linux"
+        elif system_name.startswith("darwin"):
+            system_name = "macosx"
+        elif system_name.startswith("win"):
+            system_name = "windows"
+
+        if sys.platform == "darwin" and self.macos_universal2:
+            print("building universal binary")
+            arguments.append("--target-arch")
+            arguments.append("universal2")
+
+        PyInstaller.__main__.run(arguments)
+
+        if self.zip:
+            print("creating zip file...")
+            build_system_info = f"{system_name}-{system_arch}".lower()
+            zip_dir(f"dist/{NAME}", f"dist/{NAME}-{build_system_info}.zip")
 
     def initialize_options(self) -> None:
-        pass
+        self.zip = False
+        self.macos_universal2 = False
 
     def finalize_options(self) -> None:
         pass
