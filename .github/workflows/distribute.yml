@@ -8,7 +8,7 @@ on:
         required: false
         default: 'true'
 
-
+#--macos-universal2
 jobs:
   distribute:
     runs-on: ${{ matrix.os.host }}
@@ -21,7 +21,7 @@ jobs:
 
           - name: macos
             host: macos-12
-            args: --macos-universal2
+            args:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
