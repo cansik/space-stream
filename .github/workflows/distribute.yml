@@ -33,8 +33,10 @@ jobs:
         id: get_version
         run: |
           echo "Library Version: $(python setup.py --version)"
-          echo ::set-output name=version::"$(python setup.py --version)"
-          echo ::set-output name=v_version::"v$(python setup.py --version)"
+          echo "version=$(python setup.py --version)" >> $GITHUB_OUTPUT
+          echo "v_version=v$(python setup.py --version)" >> $GITHUB_OUTPUT
+          
+          echo "V-Version: ${{ steps.get_version.outputs.v_version }}"
 
       - name: Build on ${{ matrix.os.name }}
         run: |
