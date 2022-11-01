@@ -27,7 +27,7 @@ segmentation_networks = {
 
 
 def parse_args():
-    parser = configargparse.ArgumentParser(prog="spacestream",
+    parser = configargparse.ArgumentParser(prog="space-stream",
                                            description="RGB-D framebuffer sharing demo for visiongraph.")
     parser.add_argument("-c", "--config", required=False, is_config_file=True, help="Configuration file path.")
     vg.add_logging_parameter(parser)
