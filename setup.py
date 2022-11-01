@@ -8,6 +8,7 @@ from typing import Union
 from setuptools import setup, find_packages
 
 NAME = "space-stream"
+MODULE_NAME = "spacestream"
 
 required_packages = find_packages()
 
@@ -49,7 +50,7 @@ class Distribution(distutils.cmd.Command):
         # create arguments
         delimiter = ";" if sys.platform.startswith("win") else ":"
         arguments = [
-            f"{NAME}/__main__.py",
+            f"{MODULE_NAME}/__main__.py",
             "--name", NAME,
             "--add-data", f"{o3d_resources_src}{delimiter}{o3d_resources_dest}",
             "--clean",

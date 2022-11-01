@@ -13,6 +13,7 @@ jobs:
   distribute:
     runs-on: ${{ matrix.os.host }}
     strategy:
+      fail-fast: false
       matrix:
         os:
           - name: windows
