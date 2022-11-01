@@ -16,13 +16,13 @@ pip install space-stream
 Simply run the `spacestream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
 
 ```
-spacestream --input realsense
+space-stream --input realsense
 ```
 
 To use the Azure Kinect use the `azure` input type:
 
 ```
-spacestream --input azure
+space-stream --input azure
 ```
 
 ### Development
@@ -58,7 +58,7 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 #### Help
 
 ```
-usage: spacestream [-h] [-c CONFIG]
+usage: space-stream [-h] [-c CONFIG]
                    [--loglevel {critical,error,warning,info,debug}]
                    [--input video-capture,image,realsense]
                    [--input-size width height] [--input-fps INPUT_FPS]
