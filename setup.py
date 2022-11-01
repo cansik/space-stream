@@ -7,7 +7,7 @@ from typing import Union
 
 from setuptools import setup, find_packages
 
-NAME = "spacestream"
+NAME = "space-stream"
 
 required_packages = find_packages()
 
@@ -89,11 +89,11 @@ class Distribution(distutils.cmd.Command):
 
 setup(
     name=NAME,
-    version='0.1.5',
+    version='0.1.6',
     packages=required_packages,
     entry_points={
         'console_scripts': [
-            'spacestream = spacestream.__main__:main',
+            'space-stream = spacestream.__main__:main',
         ],
     },
     url='https://github.com/cansik/space-stream',
