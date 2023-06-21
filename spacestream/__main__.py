@@ -1,3 +1,8 @@
+# fix conda load dll problem
+import os
+
+os.environ["CONDA_DLL_SEARCH_MODIFICATION_ENABLE"] = "1"
+
 import logging
 from functools import partial
 
