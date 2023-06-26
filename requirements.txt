@@ -3,7 +3,7 @@ configargparse
 pyopengl
 
 # visiongraph
-visiongraph[realsense, azure, mediapipe, numba, onnx, media]==0.1.46.1
+visiongraph[realsense, azure, mediapipe, numba, onnx, media]==0.1.47.3
 protobuf<=3.20.1
 numpy<=1.22.4
 

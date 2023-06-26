@@ -5,7 +5,7 @@ Send RGB-D images over spout / syphon with visiongraph.
 *Source: Intel® RealSense™ [Sample Data](https://github.com/IntelRealSense/librealsense/blob/master/doc/sample-data.md)*
 
 ### Installation
-It is recommended to use `Python 3.8` or `Python 3.9` and should run on any OS. First create a new [virtualenv](https://docs.python.org/3/library/venv.html) and activate it. 
+It is recommended to use `Python 3.8`, `Python 3.9` or `Python 3.10` and should run on any OS. First create a new [virtualenv](https://docs.python.org/3/library/venv.html) and activate it. 
 After that install all dependencies:
 
 ```bash
@@ -72,6 +72,17 @@ usage: space-stream [-h] [-c CONFIG]
                    [--rs-disable-emitter] [--rs-bag-offline]
                    [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
                    [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
+                   [--k4a-align] [--k4a-device K4A_DEVICE]
+                   [--k4a-depth-clipping min max]
+                   [--k4a-ir-clipping min max]
+                   [--k4a-play-mkv K4A_PLAY_MKV]
+                   [--k4a-record-mkv K4A_RECORD_MKV]
+                   [--k4a-depth-mode OFF,NFOV_2X2BINNED,NFOV_UNBINNED,WFOV_2X2BINNED,WFOV_UNBINNED,PASSIVE_IR]
+                   [--k4a-passive-ir]
+                   [--k4a-color-resolution OFF,RES_720P,RES_1080P,RES_1440P,RES_1536P,RES_2160P,RES_3072P]
+                   [--k4a-color-format COLOR_MJPG,COLOR_NV12,COLOR_YUY2,COLOR_BGRA32,DEPTH16,IR16,CUSTOM8,CUSTOM16,CUSTOM]
+                   [--k4a-wired-sync-mode STANDALONE,MASTER,SUBORDINATE]
+                   [--k4a-subordinate-delay-off-master-usec K4A_SUBORDINATE_DELAY_OFF_MASTER_USEC]
                    [--midas] [--mask]
                    [--segnet mediapipe,mediapipe-light,mediapipe-heavy]
                    [--codec Linear,UniformHue,InverseHue]
@@ -132,6 +143,30 @@ input provider:
                         RealSense depth filter.
   --rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern
                         Color scheme for depth map, default: WhiteToBlack.
+  --k4a-align           Align azure frames to depth frame.
+  --k4a-device K4A_DEVICE
+                        Azure device id.
+  --k4a-depth-clipping min max
+                        Depth input clipping.
+  --k4a-ir-clipping min max
+                        Infrared input clipping.
+  --k4a-play-mkv K4A_PLAY_MKV
+                        Path to a pre-recorded bag file for playback.
+  --k4a-record-mkv K4A_RECORD_MKV
+                        Path to a mkv file to store the current recording.
+  --k4a-depth-mode OFF,NFOV_2X2BINNED,NFOV_UNBINNED,WFOV_2X2BINNED,WFOV_UNBINNED,PASSIVE_IR
+                        Azure depth mode, default: NFOV_UNBINNED.
+  --k4a-passive-ir      Use passive IR input.
+  --k4a-color-resolution OFF,RES_720P,RES_1080P,RES_1440P,RES_1536P,RES_2160P,RES_3072P
+                        Azure color resolution (overwrites input-size),
+                        default: RES_720P.
+  --k4a-color-format COLOR_MJPG,COLOR_NV12,COLOR_YUY2,COLOR_BGRA32,DEPTH16,IR16,CUSTOM8,CUSTOM16,CUSTOM
+                        Azure color image format, default: COLOR_BGRA32.
+  --k4a-wired-sync-mode STANDALONE,MASTER,SUBORDINATE
+                        Synchronization mode when connecting two or more
+                        devices together, default: STANDALONE.
+  --k4a-subordinate-delay-off-master-usec K4A_SUBORDINATE_DELAY_OFF_MASTER_USEC
+                        The external synchronization timing.
   --midas               Use midas for depth capture.
 
 masking:
@@ -171,4 +206,4 @@ values which override defaults.
 ```
 
 ### About
-Copyright (c) 2022 Florian Bruggisser
+Copyright (c) 2023 Florian Bruggisser
