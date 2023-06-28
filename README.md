@@ -59,41 +59,48 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 
 ```
 usage: space-stream [-h] [-c CONFIG]
-                   [--loglevel {critical,error,warning,info,debug}]
-                   [--input video-capture,image,realsense]
-                   [--input-size width height] [--input-fps INPUT_FPS]
-                   [--input-rotate 90,-90,180] [--input-flip h,v]
-                   [--raw-input] [--channel CHANNEL] [--input-skip INPUT_SKIP]
-                   [--input-path INPUT_PATH] [--input-delay INPUT_DELAY]
-                   [--depth] [--depth-as-input] [-ir] [--exposure EXPOSURE]
-                   [--gain GAIN] [--white-balance WHITE_BALANCE]
-                   [--rs-serial RS_SERIAL] [--rs-json RS_JSON]
-                   [--rs-play-bag RS_PLAY_BAG] [--rs-record-bag RS_RECORD_BAG]
-                   [--rs-disable-emitter] [--rs-bag-offline]
-                   [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
-                   [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
-                   [--k4a-align] [--k4a-device K4A_DEVICE]
-                   [--k4a-depth-clipping min max]
-                   [--k4a-ir-clipping min max]
-                   [--k4a-play-mkv K4A_PLAY_MKV]
-                   [--k4a-record-mkv K4A_RECORD_MKV]
-                   [--k4a-depth-mode OFF,NFOV_2X2BINNED,NFOV_UNBINNED,WFOV_2X2BINNED,WFOV_UNBINNED,PASSIVE_IR]
-                   [--k4a-passive-ir]
-                   [--k4a-color-resolution OFF,RES_720P,RES_1080P,RES_1440P,RES_1536P,RES_2160P,RES_3072P]
-                   [--k4a-color-format COLOR_MJPG,COLOR_NV12,COLOR_YUY2,COLOR_BGRA32,DEPTH16,IR16,CUSTOM8,CUSTOM16,CUSTOM]
-                   [--k4a-wired-sync-mode STANDALONE,MASTER,SUBORDINATE]
-                   [--k4a-subordinate-delay-off-master-usec K4A_SUBORDINATE_DELAY_OFF_MASTER_USEC]
-                   [--midas] [--mask]
-                   [--segnet mediapipe,mediapipe-light,mediapipe-heavy]
-                   [--codec Linear,UniformHue,InverseHue]
-                   [--min-distance MIN_DISTANCE] [--max-distance MAX_DISTANCE]
-                   [--use-parallel] [--no-fastmath]
-                   [--stream-name STREAM_NAME] [--no-filter] [--no-preview]
-                   [--record] [--view-pcd] [--view-3d]
+                    [--loglevel {critical,error,warning,info,debug}]
+                    [--input video-capture,image,realsense,azure,camgear]
+                    [--input-size width height] [--input-fps INPUT_FPS]
+                    [--input-rotate 90,-90,180] [--input-flip h,v]
+                    [--input-mask INPUT_MASK] [--input-crop x y width height]
+                    [--raw-input] [--channel CHANNEL]
+                    [--input-skip INPUT_SKIP]
+                    [--input-backend any,vfw,v4l,v4l2,firewire,fireware,ieee1394,dc1394,cmu1394,qt,unicap,dshow,pvapi,openni,openni_asus,android,xiapi,avfoundation,giganetix,msmf,winrt,intelperc,openni2,openni2_asus,gphoto2,gstreamer,ffmpeg,images,aravis,opencv_mjpeg,intel_mfx,xine]
+                    [-src SOURCE] [--input-path INPUT_PATH]
+                    [--input-delay INPUT_DELAY] [--depth] [--depth-as-input]
+                    [-ir] [--exposure EXPOSURE] [--gain GAIN]
+                    [--white-balance WHITE_BALANCE] [--rs-serial RS_SERIAL]
+                    [--rs-json RS_JSON] [--rs-play-bag RS_PLAY_BAG]
+                    [--rs-record-bag RS_RECORD_BAG] [--rs-disable-emitter]
+                    [--rs-bag-offline]
+                    [--rs-auto-exposure-limit RS_AUTO_EXPOSURE_LIMIT]
+                    [--rs-auto-gain-limit RS_AUTO_GAIN_LIMIT]
+                    [--rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]]
+                    [--rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern]
+                    [--k4a-align-to-color] [--k4a-align-to-depth]
+                    [--k4a-device K4A_DEVICE] [--k4a-depth-clipping min max]
+                    [--k4a-ir-clipping min max] [--k4a-play-mkv K4A_PLAY_MKV]
+                    [--k4a-record-mkv K4A_RECORD_MKV]
+                    [--k4a-depth-mode OFF,NFOV_2X2BINNED,NFOV_UNBINNED,WFOV_2X2BINNED,WFOV_UNBINNED,PASSIVE_IR]
+                    [--k4a-passive-ir]
+                    [--k4a-color-resolution OFF,RES_720P,RES_1080P,RES_1440P,RES_1536P,RES_2160P,RES_3072P]
+                    [--k4a-color-format COLOR_MJPG,COLOR_NV12,COLOR_YUY2,COLOR_BGRA32,DEPTH16,IR16,CUSTOM8,CUSTOM16,CUSTOM]
+                    [--k4a-wired-sync-mode STANDALONE,MASTER,SUBORDINATE]
+                    [--k4a-subordinate-delay-off-master-usec K4A_SUBORDINATE_DELAY_OFF_MASTER_USEC]
+                    [--midas] [--mask]
+                    [--segnet mediapipe,mediapipe-light,mediapipe-heavy]
+                    [--codec Linear,UniformHue,InverseHue,RSColorizer]
+                    [--min-distance MIN_DISTANCE]
+                    [--max-distance MAX_DISTANCE] [--parallel]
+                    [--num-threads NUM_THREADS] [--no-fastmath]
+                    [--stream-name STREAM_NAME] [--no-filter] [--no-preview]
+                    [--record] [--record-crf RECORD_CRF] [--view-pcd]
+                    [--view-3d]
 
 RGB-D framebuffer sharing demo for visiongraph.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
                         Configuration file path.
@@ -102,7 +109,7 @@ optional arguments:
                         default=warning
 
 input provider:
-  --input video-capture,image,realsense
+  --input video-capture,image,realsense,azure,camgear
                         Image input provider, default: video-capture.
   --input-size width height
                         Requested input media size.
@@ -111,12 +118,20 @@ input provider:
   --input-rotate 90,-90,180
                         Rotate input media.
   --input-flip h,v      Flip input media.
+  --input-mask INPUT_MASK
+                        Path to the input mask.
+  --input-crop x y width height
+                        Crop input image.
   --raw-input           Skip automatic input conversion to 3-channel image.
   --channel CHANNEL     Input device channel (camera id, video path, image
                         sequence).
   --input-skip INPUT_SKIP
                         If set the input will be skipped to the value in
                         milliseconds.
+  --input-backend any,vfw,v4l,v4l2,firewire,fireware,ieee1394,dc1394,cmu1394,qt,unicap,dshow,pvapi,openni,openni_asus,android,xiapi,avfoundation,giganetix,msmf,winrt,intelperc,openni2,openni2_asus,gphoto2,gstreamer,ffmpeg,images,aravis,opencv_mjpeg,intel_mfx,xine
+                        VideoCapture API backends identifier., default: any.
+  -src SOURCE, --source SOURCE
+                        Generic input source for all inputs.
   --input-path INPUT_PATH
                         Path to the input image.
   --input-delay INPUT_DELAY
@@ -139,11 +154,16 @@ input provider:
                         Path to a bag file to store the current recording.
   --rs-disable-emitter  Disable RealSense IR emitter.
   --rs-bag-offline      Disable realtime bag playback.
+  --rs-auto-exposure-limit RS_AUTO_EXPOSURE_LIMIT
+                        Auto exposure limit (ms).
+  --rs-auto-gain-limit RS_AUTO_GAIN_LIMIT
+                        Auto gain limit (16-248).
   --rs-filter decimation,spatial,temporal,hole-filling [decimation,spatial,temporal,hole-filling ...]
                         RealSense depth filter.
   --rs-color-scheme Jet,Classic,WhiteToBlack,BlackToWhite,Bio,Cold,Warm,Quantized,Pattern
                         Color scheme for depth map, default: WhiteToBlack.
-  --k4a-align           Align azure frames to depth frame.
+  --k4a-align-to-color  Align azure frames to color frame.
+  --k4a-align-to-depth  Align azure frames to depth frame.
   --k4a-device K4A_DEVICE
                         Azure device id.
   --k4a-depth-clipping min max
@@ -175,16 +195,18 @@ masking:
                         Segmentation Network, default: mediapipe.
 
 depth codec:
-  --codec Linear,UniformHue,InverseHue
+  --codec Linear,UniformHue,InverseHue,RSColorizer
                         Codec how the depth map will be encoded., default:
-                        Linear.
+                        UniformHue.
   --min-distance MIN_DISTANCE
                         Min distance to perceive by the camera.
   --max-distance MAX_DISTANCE
                         Max distance to perceive by the camera.
 
 performance:
-  --use-parallel        Enable parallel for codec operations.
+  --parallel            Enable parallel for codec operations.
+  --num-threads NUM_THREADS
+                        Number of threads for parallelization.
   --no-fastmath         Disable fastmath for codec operations.
 
 output:
@@ -195,14 +217,10 @@ debug:
   --no-filter           Disable realsense image filter.
   --no-preview          Disable preview to speed.
   --record              Record output into recordings folder.
+  --record-crf RECORD_CRF
+                        Recording compression rate.
   --view-pcd            Display PCB preview (deprecated, use --view-3d).
   --view-3d             Display PCB preview.
-
-Args that start with '--' (eg. --loglevel) can also be set in a config file
-(specified via -c). Config file syntax allows: key=value, flag=true,
-stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). If an arg is
-specified in more than one place, then commandline values override config file
-values which override defaults.
 ```
 
 ### About
