@@ -1,5 +1,14 @@
 # fix conda load dll problem
+import faulthandler
 import os
+from pathlib import Path
+
+from duit.arguments.Arguments import DefaultArguments
+from visiongui.ui.UIContext import UIContext
+
+from spacestream.SpaceStreamApp import SpaceStreamApp
+from spacestream.SpaceStreamConfig import SpaceStreamConfig
+from spacestream.ui.MainWindow import MainWindow
 
 os.environ["CONDA_DLL_SEARCH_MODIFICATION_ENABLE"] = "1"
 
@@ -31,11 +40,14 @@ segmentation_networks = {
 }
 
 
-def parse_args():
+def parse_args(config: SpaceStreamConfig):
     parser = configargparse.ArgumentParser(prog="space-stream",
                                            description="RGB-D framebuffer sharing demo for visiongraph.")
     parser.add_argument("-c", "--config", required=False, is_config_file=True, help="Configuration file path.")
+    parser.add_argument("-s", "--settings", type=str, required=False, help="Settings file path (json).")
     vg.add_logging_parameter(parser)
+
+    DefaultArguments.add_arguments(parser, config)
 
     input_group = parser.add_argument_group("input provider")
     add_input_step_choices(input_group)
@@ -76,8 +88,16 @@ def parse_args():
 
 
 def main():
-    args = parse_args()
+    config = SpaceStreamConfig()
+
+    args = parse_args(config)
+    DefaultArguments.configure(args, config)
+
     vg.setup_logging(args.loglevel)
+    logging.info(f"Logging has ben set to {args.loglevel}")
+
+    if args.loglevel.lower() == "debug" or True:
+        faulthandler.enable()
 
     if args.parallel:
         num_threads = min(numba.config.NUMBA_NUM_THREADS, args.num_threads)
@@ -102,28 +122,25 @@ def main():
     if issubclass(args.input, vg.AzureKinectInput):
         args.k4a_align = True
 
-    # create frame buffer sharing client
-    fbs_client = FrameBufferSharingServer.create(args.stream_name)
-
     show_ui = not args.no_preview
 
-    # run pipeline
-    from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
-    pipeline = SpaceStreamPipeline(args.stream_name, args.input(), fbs_client, args.codec,
-                                   args.min_distance, args.max_distance,
-                                   args.record, args.mask, args.segnet(), args.midas,
-                                   multi_threaded=show_ui, handle_signals=not show_ui)
-    pipeline.configure(args)
+    # create app and graph
+    app = SpaceStreamApp(config, args.input(), None, multi_threaded=show_ui)
+    app.graph.configure(args)
+
+    if args.settings is not None:
+        settings_path = Path(args.settings)
+        if settings_path.exists():
+            app.graph.load_config(settings_path)
 
     if show_ui:
-        app = o3d.visualization.gui.Application.instance
-        app.initialize()
+        with UIContext():
+            window = MainWindow(app)
 
-        from spacestream.ui.MainWindow import MainWindow
-        win = MainWindow(pipeline, args)
-        app.run()
+            if args.settings is not None:
+                window.menu.settings_file = Path(args.settings)
     else:
-        pipeline.open()
+        app.graph.open()
 
 
 if __name__ == "__main__":

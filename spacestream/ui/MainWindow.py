@@ -6,44 +6,29 @@ from typing import Optional, Sequence
 import cv2
 import numpy as np
 import open3d as o3d
+import pyrealsense2 as rs
+import visiongraph as vg
 from open3d.visualization import gui
-from duit.ui.open3d.Open3dPropertyRegistry import init_open3d_registry
-from duit.ui.open3d.Open3dPropertyPanel import Open3dPropertyPanel
+from visiongui.ui.VisiongraphUserInterface import VisiongraphUserInterface
 
-from spacestream.SpaceStreamPipeline import SpaceStreamPipeline
+from spacestream.SpaceStreamApp import SpaceStreamApp
+from spacestream.SpaceStreamConfig import SpaceStreamConfig
 from spacestream.codec.LinearCodec import LinearCodec
 from spacestream.ui.PipelineView import PipelineView
 
-import visiongraph as vg
-import pyrealsense2 as rs
 
+class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
+    def __init__(self, app: SpaceStreamApp):
+        super().__init__(app, width=1000, height=800, handle_graph_state=True)
 
-class MainWindow:
-    def __init__(self, pipeline: SpaceStreamPipeline, args):
-        self.pipeline = pipeline
-        init_open3d_registry()
-
-        self.window: gui.Window = gui.Application.instance.create_window(f"Space Stream - {pipeline.stream_name}",
-                                                                         round(1000),
-                                                                         round(800))
-        self.window.set_on_layout(self._on_layout)
-        self.window.set_on_close(self._on_close)
-
-        self.em = self.window.theme.font_size
-        margin = 0.5 * self.em
-
-        # settings panel
-        self.settings_panel_width = 18 * self.em  # 15 ems wide
-        self.settings_panel = Open3dPropertyPanel(self.window)
-        self.settings_panel.data_context = pipeline
-        self.window.add_child(self.settings_panel)
+        self.window.title = f"SpaceStream - {self.config.stream_name.value}"
 
         # used for colorized preview
         self.colorizer = rs.colorizer()
         self.colorizer.set_option(rs.option.histogram_equalization_enabled, 0)
         self.colorizer.set_option(rs.option.color_scheme, 9.0)
-        self.colorizer.set_option(rs.option.min_distance, self.pipeline.min_distance.value)
-        self.colorizer.set_option(rs.option.max_distance, self.pipeline.max_distance.value)
+        self.colorizer.set_option(rs.option.min_distance, self.config.min_distance.value)
+        self.colorizer.set_option(rs.option.max_distance, self.config.max_distance.value)
 
         # info panel
         self.settings_panel.add_child(gui.Label("View Parameter"))
@@ -52,7 +37,7 @@ class MainWindow:
         self.display_depth_map.checked = False
         self.settings_panel.add_child(self.display_depth_map)
 
-        if args.view_3d:
+        if self.config.enable_3d_view.value:
             self.display_16_bit = gui.Checkbox("Display 16bit")
             self.display_16_bit.checked = True
             self.settings_panel.add_child(self.display_16_bit)
@@ -80,7 +65,7 @@ class MainWindow:
 
             self.point_size.set_on_value_changed(on_point_size_changed)
 
-        if isinstance(pipeline.input, vg.RealSenseInput) and pipeline.input.input_bag_file is not None:
+        if isinstance(self.graph.input, vg.RealSenseInput) and self.graph.input.input_bag_file is not None:
             self.settings_panel.add_child(gui.Label("RealSense"))
 
             self.play_bag = gui.Checkbox("Play")
@@ -88,13 +73,13 @@ class MainWindow:
             self.settings_panel.add_child(self.play_bag)
 
             def on_play_bag_changed(value):
-                if not isinstance(pipeline.input, vg.RealSenseInput):
+                if not isinstance(self.graph.input, vg.RealSenseInput):
                     return
 
-                if pipeline.input.device is None:
+                if self.graph.device is None:
                     return
 
-                playback: rs.playback = pipeline.input.profile.get_device().as_playback()
+                playback: rs.playback = self.graph.input.profile.get_device().as_playback()
 
                 if value:
                     playback.resume()
@@ -107,22 +92,19 @@ class MainWindow:
 
         self.none_image = o3d.geometry.Image(np.zeros(shape=(1, 1, 3), dtype="uint8"))
 
-        # preview
-        self.rgb_widget = gui.ImageWidget(self.none_image)
-        self.window.add_child(self.rgb_widget)
-
         # hook to events
-        self.pipeline.on_frame_ready = self.on_frame_ready
-        self.pipeline.on_exception = self._on_pipeline_exception
-        self.pipeline.disable_preview.on_changed += self._disable_preview_changed
-        self.pipeline.disable_preview.fire_latest()
+        self.graph.on_frame_ready = self.on_frame_ready
+        self.graph.on_exception = self._on_pipeline_exception
+
+        self.config.disable_preview.on_changed += self._disable_preview_changed
+        self.config.disable_preview.fire_latest()
 
         signal.signal(signal.SIGINT, self._signal_handler)
 
         # pipeline
         self.pipeline_view: Optional[PipelineView] = None
 
-        if args.view_3d:
+        if self.config.enable_3d_view.value:
             self.pipeline_view = PipelineView(60, 640 * 480, self.window, on_window_close=self._on_close)
             self.pipeline_view.window = self.window
             self.window.add_child(self.pipeline_view.pcdview)
@@ -132,25 +114,18 @@ class MainWindow:
         self.settings_panel.add_child(self.restart_pipeline_button)
         self.window.add_child(self.settings_panel)
 
-        # start pipeline
-        pipeline.fbs_client.setup()
-        pipeline.open()
-
     def _signal_handler(self, signal, frame):
         self.window.close()
 
     def _on_restart_clicked(self):
-        self.pipeline.close()
-        self.pipeline.fbs_client.release()
-
-        self.pipeline.fbs_client.setup()
-        self.pipeline.open()
+        self.graph.close()
+        self.graph.open()
 
     def _on_pipeline_exception(self, pipeline, ex):
         # display error message in console
         logging.warning("".join(traceback.TracebackException.from_exception(ex).format()))
 
-    def _on_layout(self, layout_context):
+    def _on_layout_unused(self, layout_context):
         content_rect = self.window.content_rect
         pcb_view_height = 0
 
@@ -161,18 +136,13 @@ class MainWindow:
                                                         content_rect.width - self.settings_panel_width,
                                                         pcb_view_height)
 
-        self.rgb_widget.frame = gui.Rect(content_rect.x, pcb_view_height,
+        self.image_view.frame = gui.Rect(content_rect.x, pcb_view_height,
                                          content_rect.width - self.settings_panel_width,
                                          content_rect.height - pcb_view_height)
 
-        self.settings_panel.frame = gui.Rect(self.rgb_widget.frame.get_right(),
+        self.settings_panel.frame = gui.Rect(self.image_view.frame.get_right(),
                                              content_rect.y, self.settings_panel_width,
                                              content_rect.height)
-
-    def _on_close(self):
-        self.pipeline.fbs_client.release()
-        self.pipeline.close()
-        gui.Application.instance.quit()
 
     @staticmethod
     def _create_preview_parameter(name: str, value: str) -> gui.Horiz:
@@ -195,16 +165,16 @@ class MainWindow:
         preview_image = bgrd
 
         if self.display_depth_map.checked:
-            if isinstance(self.pipeline.input, vg.DepthBuffer):
-                if isinstance(self.pipeline.input, vg.RealSenseInput):
-                    self.colorizer.set_option(rs.option.min_distance, self.pipeline.min_distance.value)
-                    self.colorizer.set_option(rs.option.max_distance, self.pipeline.max_distance.value)
-                    colorized_frame = self.colorizer.colorize(self.pipeline.input.depth_frame)
+            if isinstance(self.graph.input, vg.DepthBuffer):
+                if isinstance(self.graph.input, vg.RealSenseInput):
+                    self.colorizer.set_option(rs.option.min_distance, self.config.min_distance.value)
+                    self.colorizer.set_option(rs.option.max_distance, self.config.max_distance.value)
+                    colorized_frame = self.colorizer.colorize(self.graph.input.depth_frame)
                     preview_image = np.asanyarray(colorized_frame.get_data())
                 else:
-                    preview_image = self.pipeline.input.depth_map
+                    preview_image = self.graph.input.depth_map
 
-        if self.pipeline.record.value:
+        if self.config.record.value:
             preview_image = bgrd.copy()
             h, w = preview_image.shape[:2]
             cv2.circle(preview_image, (w - 25, 25), 15, (255, 0, 0), -1)
@@ -220,15 +190,15 @@ class MainWindow:
 
         def update():
             # send stream
-            self.pipeline.fbs_client.send(bgrd)
+            self.graph.fbs_client.send(bgrd)
 
             # update image
-            self.rgb_widget.update_image(image)
+            self.image_view.update_image(image)
 
         gui.Application.instance.post_to_main_thread(self.window, update)
 
     def create_3d_cloud(self, frame):
-        if not isinstance(self.pipeline.input, vg.BaseDepthCamera):
+        if not isinstance(self.graph.input, vg.BaseDepthCamera):
             return
 
         h, tw = frame.shape[:2]
@@ -239,9 +209,9 @@ class MainWindow:
         extrinsics = o3d.core.Tensor.eye(4, dtype=o3d.core.Dtype.Float32)
 
         intrinsic_matrix = o3d.core.Tensor(
-            self.pipeline.input.camera_matrix,
+            self.graph.input.camera_matrix,
             dtype=o3d.core.Dtype.Float32)
-        depth_max = self.pipeline.max_distance.value  # m
+        depth_max = self.config.max_distance.value  # m
         pcd_stride = self.pcl_stride.int_value  # downsample point cloud, may increase frame rate
         flag_normals = False
         depth_scale = 1000
@@ -251,14 +221,14 @@ class MainWindow:
         depth = np.copy(frame[0:h, 0:w])
 
         # decode
-        min_value = round(self.pipeline.min_distance.value / self.pipeline.depth_units)
-        max_value = round(self.pipeline.max_distance.value / self.pipeline.depth_units)
+        min_value = round(self.config.min_distance.value / self.graph.depth_units)
+        max_value = round(self.config.max_distance.value / self.graph.depth_units)
 
-        if isinstance(self.pipeline.depth_codec, LinearCodec):
-            depth = self.pipeline.depth_codec.decode(depth, min_value, max_value,
-                                                     decode_8bit=not self.display_16_bit.checked)
+        if isinstance(self.graph.depth_codec, LinearCodec):
+            depth = self.graph.depth_codec.decode(depth, min_value, max_value,
+                                                  decode_8bit=not self.display_16_bit.checked)
         else:
-            depth = self.pipeline.depth_codec.decode(depth, min_value, max_value)
+            depth = self.graph.depth_codec.decode(depth, min_value, max_value)
 
         depth = cv2.cvtColor(depth, cv2.COLOR_GRAY2RGB)
 
@@ -308,6 +278,6 @@ class MainWindow:
         image = o3d.geometry.Image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
         def update():
-            self.rgb_widget.update_image(image)
+            self.image_view.update_image(image)
 
         gui.Application.instance.post_to_main_thread(self.window, update)

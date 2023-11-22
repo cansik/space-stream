@@ -90,7 +90,7 @@ class Distribution(distutils.cmd.Command):
 
 setup(
     name=NAME,
-    version='0.1.7.2',
+    version='0.2.0',
     packages=required_packages,
     entry_points={
         'console_scripts': [
