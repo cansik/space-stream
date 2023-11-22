@@ -20,12 +20,9 @@ import numba
 from visiongraph.input import add_input_step_choices
 
 from spacestream import codec
-from spacestream.codec.DepthCodecType import DepthCodecType
-from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 
 import visiongraph as vg
 import pyrealsense2 as rs
-import open3d as o3d
 
 segmentation_networks = {
     "mediapipe": partial(vg.MediaPipePoseEstimator.create, vg.PoseModelComplexity.Normal),
