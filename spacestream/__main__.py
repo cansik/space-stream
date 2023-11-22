@@ -58,24 +58,14 @@ def parse_args(config: SpaceStreamConfig):
     vg.add_step_choice_argument(masking_group, segmentation_networks, name="--segnet", default="mediapipe",
                                 help="Segmentation Network", add_params=False)
 
-    depth_group = parser.add_argument_group("depth codec")
-    vg.add_enum_choice_argument(depth_group, DepthCodecType, "--codec",
-                                help="Codec how the depth map will be encoded.", default=DepthCodecType.UniformHue)
-    depth_group.add_argument("--min-distance", type=float, default=0, help="Min distance to perceive by the camera.")
-    depth_group.add_argument("--max-distance", type=float, default=6, help="Max distance to perceive by the camera.")
-
     performance_group = parser.add_argument_group("performance")
     performance_group.add_argument("--parallel", action="store_true", help="Enable parallel for codec operations.")
     performance_group.add_argument("--num-threads", type=int, default=4, help="Number of threads for parallelization.")
     performance_group.add_argument("--no-fastmath", action="store_true", help="Disable fastmath for codec operations.")
 
-    output_group = parser.add_argument_group("output")
-    output_group.add_argument("--stream-name", type=str, default="RGBDStream", help="Spout / Syphon stream name.")
-
     debug_group = parser.add_argument_group("debug")
     debug_group.add_argument("--no-filter", action="store_true", help="Disable realsense image filter.")
     debug_group.add_argument("--no-preview", action="store_true", help="Disable preview to speed.")
-    debug_group.add_argument("--record", action="store_true", help="Record output into recordings folder.")
     debug_group.add_argument("--record-crf", type=int, default=23, help="Recording compression rate.")
     debug_group.add_argument("--view-pcd", action="store_true", help="Display PCB preview (deprecated, use --view-3d).")
     debug_group.add_argument("--view-3d", action="store_true", help="Display PCB preview.")
@@ -131,7 +121,7 @@ def main():
     if args.settings is not None:
         settings_path = Path(args.settings)
         if settings_path.exists():
-            app.graph.load_config(settings_path)
+            app.load_config(settings_path)
 
     if show_ui:
         with UIContext():

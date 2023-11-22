@@ -178,7 +178,7 @@ class SpaceStreamGraph(vg.VisionGraph):
         # start recording
         if self.config.record.value and self.recorder is None:
             time_str = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-            output_file_path = f"recordings/{self.config.stream_name}-{time_str}.mp4"
+            output_file_path = f"recordings/{self.config.stream_name.value}-{time_str}.mp4"
             self.recorder = vg.VidGearVideoRecorder(output_file_path, fps=self.input.fps)
             self.recorder.output_params.update({
                 "-crf": self.crf,
