@@ -36,11 +36,11 @@ class SpaceStreamConfig:
             self.cam_auto_white_balance = DataField(True) | dui.Boolean("Auto White Balance")
             self.cam_white_balance = DataField(6000) | dui.Slider("White Balance", 2500, 12500)
 
-        with container.section("3D View"):
-            self.enable_3d_view = DataField(False) # | dui.Boolean("Enabled")
+        # with container.section("3D View"):
+        self.enable_3d_view = DataField(False) # | dui.Boolean("Enabled")
 
-        with container.section("Masking"):
-            self.masking = DataField(False) # | dui.Boolean("Enabled")
+        # with container.section("Masking"):
+        self.masking = DataField(False) # | dui.Boolean("Enabled")
 
         with container.section("FB Sharing"):
             self.stream_name = DataField("stream") | dui.Text("Stream Name") | Argument(help="Spout / Syphon stream name.")

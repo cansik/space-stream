@@ -302,7 +302,8 @@ class SpaceStreamGraph(vg.VisionGraph):
                 cam.enable_auto_exposure = on
 
                 if not on:
-                    cam.exposure = self.config.cam_exposure.value * 1000
+                    cam.exposure = int(self.config.cam_exposure.value * 1000)
+                    cam.gain = int(self.config.cam_iso.value)
             except AttributeError:
                 pass
 
@@ -311,21 +312,23 @@ class SpaceStreamGraph(vg.VisionGraph):
                 cam.enable_auto_white_balance = on
 
                 if not on:
-                    cam.white_balance = self.config.cam_white_balance.value
+                    cam.white_balance = int(self.config.cam_white_balance.value)
             except AttributeError:
                 pass
 
         def _on_exposure_change(value: int):
             self.config.cam_auto_exposure.value = False
+
             try:
-                cam.exposure = value * 1000
+                cam.exposure = int(value * 1000)
             except Exception as ex:
                 logging.warning(f"Could not set exposure ({value}): {ex}")
 
         def _on_white_balance_change(value: int):
             self.config.cam_auto_white_balance.value = False
+
             try:
-                cam.white_balance = value
+                cam.white_balance = int(value)
             except Exception as ex:
                 logging.warning(f"Could not set white-balance ({value}): {ex}")
 
@@ -335,12 +338,9 @@ class SpaceStreamGraph(vg.VisionGraph):
         self.config.cam_auto_white_balance.on_changed += _on_auto_white_balance_change
         self.config.cam_white_balance.on_changed += _on_white_balance_change
 
-        self.config.cam_iso.bind_to_attribute(cam, cam_ref.gain)
+        self.config.cam_iso.bind_to_attribute(cam, cam_ref.gain, lambda x: int(x))
 
     def _apply_camera_settings(self, cam: vg.BaseCamera):
-        cam.exposure = self.config.cam_exposure.value
-        cam.white_balance = self.config.cam_white_balance.value
-
         self.config.cam_iso.fire()
         self.config.cam_auto_exposure.fire()
         self.config.cam_auto_white_balance.fire()
