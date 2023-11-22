@@ -44,8 +44,17 @@ class SpaceStreamGraph(vg.VisionGraph):
         self.config = config
 
         self.input = input_node
-        self.fbs_client = FrameBufferSharingServer.create(config.stream_name.value)
         self.fps_tracer = vg.FPSTracer()
+        self.fbs_client = FrameBufferSharingServer.create(config.stream_name.value)
+
+        def on_stream_name_changed(new_stream_name: str):
+            logging.info("changing stream name...")
+            self.fbs_client.release()
+            self.fbs_client = FrameBufferSharingServer.create(new_stream_name)
+            self.fbs_client.setup()
+            logging.info(f"stream name changed to {new_stream_name}")
+
+        self.config.stream_name.on_changed += on_stream_name_changed
 
         self.depth_units: float = 0.001
 

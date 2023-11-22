@@ -21,7 +21,11 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
     def __init__(self, app: SpaceStreamApp):
         super().__init__(app, width=1000, height=800, handle_graph_state=True)
 
-        self.window.title = f"SpaceStream - {self.config.stream_name.value}"
+        def on_stream_name_changed(new_stream_name: str):
+            self.window.title = f"SpaceStream - {new_stream_name}"
+
+        self.config.stream_name.on_changed += on_stream_name_changed
+        self.config.stream_name.fire_latest()
 
         # used for colorized preview
         self.colorizer = rs.colorizer()
