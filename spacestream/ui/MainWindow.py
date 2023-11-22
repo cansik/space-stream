@@ -122,15 +122,13 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
         # graph indicator
         self.graph_indicator = gui.Horiz(margins=gui.Margins(8, 8, 8, 8))
         self.graph_indicator.add_stretch()
-        self.indicator_label = gui.Label("Offline        ")
+        self.indicator_label = gui.Label("Starting up...")
         self.graph_indicator.add_child(self.indicator_label)
         self.graph_indicator.add_stretch()
 
         self.online_color = gui.Color(0.2, 0.6, 0.2, 1.0)
         self.warning_color = gui.Color(0.6, 0.6, 0.2, 1.0)
         self.offline_color = gui.Color(0.6, 0.2, 0.2, 1.0)
-
-        self.graph_indicator.background_color = self.offline_color
 
         self.indicator_size = self.em * 2
         self.window.add_child(self.graph_indicator)
