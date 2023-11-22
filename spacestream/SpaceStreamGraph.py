@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
+from duit.utils.name_reference import create_name_reference
 
 from spacestream.SpaceStreamConfig import SpaceStreamConfig
 from spacestream.codec.DepthCodec import DepthCodec
@@ -102,6 +103,9 @@ class SpaceStreamGraph(vg.VisionGraph):
 
         self.add_nodes(self.fbs_client)
 
+        if isinstance(self.input, vg.BaseCamera):
+            self._setup_camera_settings(self.input)
+
     def _update_intrinsics(self, frame: np.ndarray) -> bool:
         h, w = frame.shape[:2]
         self.config.intrinsics_res.value = f"{w} x {h}"
@@ -138,7 +142,8 @@ class SpaceStreamGraph(vg.VisionGraph):
             self.stream_information.resolution = StreamSize(w, h)
             self.stream_information.intrinsics.principle = Vector2(ppx, ppy)
             self.stream_information.intrinsics.focal = Vector2(fx, fy)
-            self.stream_information.distance = RangeValue(self.config.min_distance.value, self.config.max_distance.value)
+            self.stream_information.distance = RangeValue(self.config.min_distance.value,
+                                                          self.config.max_distance.value)
         else:
             self.config.intrinsics_principle.value = "-"
             self.config.intrinsics_focal.value = "-"
@@ -168,6 +173,9 @@ class SpaceStreamGraph(vg.VisionGraph):
             calibration = self.input.device.calibration
             mat = calibration.get_camera_matrix(CalibrationType.DEPTH)
             print(mat)
+
+        if isinstance(self.input, vg.BaseCamera):
+            self._apply_camera_settings(self.input)
 
     def _process(self):
         ts, frame = self.input.read()
@@ -285,6 +293,57 @@ class SpaceStreamGraph(vg.VisionGraph):
         super()._release()
         if self.config.record.value and self.recorder is not None:
             self.recorder.close()
+
+    def _setup_camera_settings(self, cam: vg.BaseCamera):
+        cam_ref = create_name_reference(cam)
+
+        def _on_auto_exposure_change(on: bool):
+            try:
+                cam.enable_auto_exposure = on
+
+                if not on:
+                    cam.exposure = self.config.cam_exposure.value * 1000
+            except AttributeError:
+                pass
+
+        def _on_auto_white_balance_change(on: bool):
+            try:
+                cam.enable_auto_white_balance = on
+
+                if not on:
+                    cam.white_balance = self.config.cam_white_balance.value
+            except AttributeError:
+                pass
+
+        def _on_exposure_change(value: int):
+            self.config.cam_auto_exposure.value = False
+            try:
+                cam.exposure = value * 1000
+            except Exception as ex:
+                logging.warning(f"Could not set exposure ({value}): {ex}")
+
+        def _on_white_balance_change(value: int):
+            self.config.cam_auto_white_balance.value = False
+            try:
+                cam.white_balance = value
+            except Exception as ex:
+                logging.warning(f"Could not set white-balance ({value}): {ex}")
+
+        self.config.cam_auto_exposure.on_changed += _on_auto_exposure_change
+        self.config.cam_exposure.on_changed += _on_exposure_change
+
+        self.config.cam_auto_white_balance.on_changed += _on_auto_white_balance_change
+        self.config.cam_white_balance.on_changed += _on_white_balance_change
+
+        self.config.cam_iso.bind_to_attribute(cam, cam_ref.gain)
+
+    def _apply_camera_settings(self, cam: vg.BaseCamera):
+        cam.exposure = self.config.cam_exposure.value
+        cam.white_balance = self.config.cam_white_balance.value
+
+        self.config.cam_iso.fire()
+        self.config.cam_auto_exposure.fire()
+        self.config.cam_auto_white_balance.fire()
 
     @staticmethod
     def mask_image(image: np.ndarray, mask: np.ndarray) -> np.ndarray:

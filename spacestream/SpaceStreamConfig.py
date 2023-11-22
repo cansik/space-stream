@@ -29,6 +29,13 @@ class SpaceStreamConfig:
             self.min_distance = DataField(0.0) | dui.Number("Min Distance") | Argument(help="Min distance to perceive by the camera.")
             self.max_distance = DataField(6.0) | dui.Number("Max Distance") | Argument(help="Max distance to perceive by the camera.")
 
+        with container.section("Camera"):
+            self.cam_auto_exposure = DataField(True) | dui.Boolean("Auto Exposure")
+            self.cam_exposure = DataField(33) | dui.Slider("Exposure", 1, 33)
+            self.cam_iso = DataField(128) | dui.Slider("ISO", 0, 255)
+            self.cam_auto_white_balance = DataField(True) | dui.Boolean("Auto White Balance")
+            self.cam_white_balance = DataField(6000) | dui.Slider("White Balance", 2500, 12500)
+
         with container.section("3D View"):
             self.enable_3d_view = DataField(False) # | dui.Boolean("Enabled")
 
