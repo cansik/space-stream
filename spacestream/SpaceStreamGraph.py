@@ -278,6 +278,9 @@ class SpaceStreamGraph(vg.VisionGraph):
         if not self.config.disable_preview.value and self.on_frame_ready is not None:
             self.on_frame_ready(rgbd)
         else:
+            if self.on_frame_ready is not None:
+                self.on_frame_ready(rgbd)
+
             bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
             self.fbs_client.send(bgrd)
 

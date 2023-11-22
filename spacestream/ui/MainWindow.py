@@ -1,5 +1,6 @@
 import logging
 import signal
+import threading
 import traceback
 from typing import Optional, Sequence
 
@@ -13,6 +14,7 @@ from visiongui.ui.VisiongraphUserInterface import VisiongraphUserInterface
 
 from spacestream.SpaceStreamApp import SpaceStreamApp
 from spacestream.SpaceStreamConfig import SpaceStreamConfig
+from spacestream.WatchDog import HealthStatus, WatchDog
 from spacestream.codec.LinearCodec import LinearCodec
 from spacestream.ui.PipelineView import PipelineView
 
@@ -116,7 +118,61 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
         self.restart_pipeline_button = gui.Button("Restart Pipeline")
         self.restart_pipeline_button.set_on_clicked(self._on_restart_clicked)
         self.settings_panel.add_child(self.restart_pipeline_button)
-        self.window.add_child(self.settings_panel)
+
+        # graph indicator
+        self.graph_indicator = gui.Horiz(margins=gui.Margins(8, 8, 8, 8))
+        self.graph_indicator.add_stretch()
+        self.indicator_label = gui.Label("Offline        ")
+        self.graph_indicator.add_child(self.indicator_label)
+        self.graph_indicator.add_stretch()
+
+        self.online_color = gui.Color(0.2, 0.6, 0.2, 1.0)
+        self.warning_color = gui.Color(0.6, 0.6, 0.2, 1.0)
+        self.offline_color = gui.Color(0.6, 0.2, 0.2, 1.0)
+
+        self.graph_indicator.background_color = self.offline_color
+
+        self.indicator_size = self.em * 2
+        self.window.add_child(self.graph_indicator)
+
+        self.watch_dog = WatchDog()
+        self.watch_dog.health.on_changed += self._on_health_update
+
+        self.window.set_on_tick_event(self._on_tick)
+
+    def _on_health_update(self, status: HealthStatus):
+        logging.warning(f"Health changed to: {status.name}")
+
+        def _update():
+            self.indicator_label.text = status.name
+
+            if status == HealthStatus.Online:
+                self.graph_indicator.background_color = self.online_color
+            elif status == HealthStatus.Warning:
+                self.graph_indicator.background_color = self.warning_color
+            elif status == HealthStatus.Offline:
+                self.graph_indicator.background_color = self.offline_color
+
+        self.invoke_on_gui(_update)
+
+    def _on_tick(self) -> bool:
+        self.watch_dog.update()
+        return True
+
+    def _on_layout(self, layout_context: gui.LayoutContext):
+        content_rect = self.window.content_rect
+
+        self.graph_indicator.frame = gui.Rect(content_rect.x, content_rect.y,
+                                              content_rect.width - self.settings_panel_width,
+                                              self.indicator_size)
+
+        self.image_view.frame = gui.Rect(content_rect.x, content_rect.y + self.indicator_size,
+                                         content_rect.width - self.settings_panel_width,
+                                         content_rect.height)
+
+        self.settings_panel.frame = gui.Rect(self.image_view.frame.get_right(),
+                                             content_rect.y, self.settings_panel_width,
+                                             content_rect.height)
 
     def _signal_handler(self, signal, frame):
         self.window.close()
@@ -165,6 +221,11 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
         return container
 
     def on_frame_ready(self, frame: np.ndarray):
+        self.watch_dog.reset()
+
+        if self.config.disable_preview.value:
+            return
+
         bgrd = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         preview_image = bgrd
 
