@@ -12,6 +12,12 @@ After that install all dependencies:
 pip install space-stream
 ```
 
+#### ZED Camera
+To be able to use a ZED Camera, please follow the tutorial on the [ZED Python API](https://www.stereolabs.com/docs/app-development/python/install/) website.
+
+1. Install the [ZED SDK](https://www.stereolabs.com/developers/release/) (together with CUDA)
+2. Run the command `python "C:\Program Files (x86)\ZED SDK\get_python_api.py"` inside the virtual python environment
+
 ### Usage
 Simply run the `spacestream` module with the following command to run a capturing pipeline (RealSense based). After that you can open a [spout receiver](https://github.com/leadedge/Spout2/releases) / syphon receiver and check the result there.
 
@@ -58,9 +64,13 @@ To define the min and max distance to encode, use the `--min-distance` and `--ma
 #### Help
 
 ```
-usage: space-stream [-h] [-c CONFIG]
+usage: space-stream [-h] [-c CONFIG] [-s SETTINGS]
                     [--loglevel {critical,error,warning,info,debug}]
-                    [--input video-capture,image,realsense,azure,camgear]
+                    [--record RECORD]
+                    [--codec Linear, UniformHue, InverseHue, RSColorizer]
+                    [--min-distance MIN_DISTANCE]
+                    [--max-distance MAX_DISTANCE] [--stream-name STREAM_NAME]
+                    [--input video-capture,image,realsense,azure,camgear,zed]
                     [--input-size width height] [--input-fps INPUT_FPS]
                     [--input-rotate 90,-90,180] [--input-flip h,v]
                     [--input-mask INPUT_MASK] [--input-crop x y width height]
@@ -68,9 +78,9 @@ usage: space-stream [-h] [-c CONFIG]
                     [--input-skip INPUT_SKIP]
                     [--input-backend any,vfw,v4l,v4l2,firewire,fireware,ieee1394,dc1394,cmu1394,qt,unicap,dshow,pvapi,openni,openni_asus,android,xiapi,avfoundation,giganetix,msmf,winrt,intelperc,openni2,openni2_asus,gphoto2,gstreamer,ffmpeg,images,aravis,opencv_mjpeg,intel_mfx,xine]
                     [-src SOURCE] [--input-path INPUT_PATH]
-                    [--input-delay INPUT_DELAY] [--depth] [--depth-as-input]
-                    [-ir] [--exposure EXPOSURE] [--gain GAIN]
-                    [--white-balance WHITE_BALANCE] [--rs-serial RS_SERIAL]
+                    [--input-delay INPUT_DELAY] [--exposure EXPOSURE]
+                    [--gain GAIN] [--white-balance WHITE_BALANCE] [--depth]
+                    [--depth-as-input] [-ir] [--rs-serial RS_SERIAL]
                     [--rs-json RS_JSON] [--rs-play-bag RS_PLAY_BAG]
                     [--rs-record-bag RS_RECORD_BAG] [--rs-disable-emitter]
                     [--rs-bag-offline]
@@ -90,13 +100,9 @@ usage: space-stream [-h] [-c CONFIG]
                     [--k4a-subordinate-delay-off-master-usec K4A_SUBORDINATE_DELAY_OFF_MASTER_USEC]
                     [--midas] [--mask]
                     [--segnet mediapipe,mediapipe-light,mediapipe-heavy]
-                    [--codec Linear,UniformHue,InverseHue,RSColorizer]
-                    [--min-distance MIN_DISTANCE]
-                    [--max-distance MAX_DISTANCE] [--parallel]
-                    [--num-threads NUM_THREADS] [--no-fastmath]
-                    [--stream-name STREAM_NAME] [--no-filter] [--no-preview]
-                    [--record] [--record-crf RECORD_CRF] [--view-pcd]
-                    [--view-3d]
+                    [--parallel] [--num-threads NUM_THREADS] [--no-fastmath]
+                    [--no-filter] [--no-preview] [--record-crf RECORD_CRF]
+                    [--view-pcd] [--view-3d]
 
 RGB-D framebuffer sharing demo for visiongraph.
 
@@ -104,12 +110,23 @@ options:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
                         Configuration file path.
+  -s SETTINGS, --settings SETTINGS
+                        Settings file path (json).
   --loglevel {critical,error,warning,info,debug}
                         Provide logging level. Example --loglevel debug,
                         default=warning
+  --record RECORD       Record output into recordings folder.
+  --codec Linear, UniformHue, InverseHue, RSColorizer
+                        Codec how the depth map will be encoded.
+  --min-distance MIN_DISTANCE
+                        Min distance to perceive by the camera.
+  --max-distance MAX_DISTANCE
+                        Max distance to perceive by the camera.
+  --stream-name STREAM_NAME
+                        Spout / Syphon stream name.
 
 input provider:
-  --input video-capture,image,realsense,azure,camgear
+  --input video-capture,image,realsense,azure,camgear,zed
                         Image input provider, default: video-capture.
   --input-size width height
                         Requested input media size.
@@ -136,15 +153,15 @@ input provider:
                         Path to the input image.
   --input-delay INPUT_DELAY
                         Input delay time (s).
-  --depth               Enable RealSense depth stream.
-  --depth-as-input      Use colored depth stream as input stream.
-  -ir, --infrared       Use infrared as input stream.
   --exposure EXPOSURE   Exposure value (usec) for depth camera input (disables
                         auto-exposure).
   --gain GAIN           Gain value for depth input (disables auto-exposure).
   --white-balance WHITE_BALANCE
                         White-Balance value for depth input (disables auto-
                         white-balance).
+  --depth               Enable RealSense depth stream.
+  --depth-as-input      Use colored depth stream as input stream.
+  -ir, --infrared       Use infrared as input stream.
   --rs-serial RS_SERIAL
                         RealSense serial number to choose specific device.
   --rs-json RS_JSON     RealSense json configuration to apply.
@@ -194,33 +211,24 @@ masking:
   --segnet mediapipe,mediapipe-light,mediapipe-heavy
                         Segmentation Network, default: mediapipe.
 
-depth codec:
-  --codec Linear,UniformHue,InverseHue,RSColorizer
-                        Codec how the depth map will be encoded., default:
-                        UniformHue.
-  --min-distance MIN_DISTANCE
-                        Min distance to perceive by the camera.
-  --max-distance MAX_DISTANCE
-                        Max distance to perceive by the camera.
-
 performance:
   --parallel            Enable parallel for codec operations.
   --num-threads NUM_THREADS
                         Number of threads for parallelization.
   --no-fastmath         Disable fastmath for codec operations.
 
-output:
-  --stream-name STREAM_NAME
-                        Spout / Syphon stream name.
-
 debug:
   --no-filter           Disable realsense image filter.
   --no-preview          Disable preview to speed.
-  --record              Record output into recordings folder.
   --record-crf RECORD_CRF
                         Recording compression rate.
   --view-pcd            Display PCB preview (deprecated, use --view-3d).
   --view-3d             Display PCB preview.
+
+Args that start with '--' can also be set in a config file (specified via -c).
+Config file syntax allows: key=value, flag=true, stuff=[a,b,c] (for details,
+see syntax at https://goo.gl/R74nmi). In general, command-line values override
+config file values which override defaults.
 ```
 
 ### About
