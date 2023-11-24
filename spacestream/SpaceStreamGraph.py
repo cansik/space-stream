@@ -55,6 +55,9 @@ class SpaceStreamGraph(vg.VisionGraph):
             self.add_nodes(self.rectifier)
 
         def on_stream_name_changed(new_stream_name: str):
+            if self.fbs_client is None:
+                return
+
             logging.info("changing stream name...")
             self.fbs_client.release()
             self.fbs_client = FrameBufferSharingServer.create(new_stream_name)
