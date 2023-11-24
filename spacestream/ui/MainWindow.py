@@ -1,8 +1,7 @@
 import logging
 import signal
-import threading
 import traceback
-from typing import Optional, Sequence
+from typing import Sequence
 
 import cv2
 import numpy as np
@@ -15,8 +14,6 @@ from visiongui.ui.VisiongraphUserInterface import VisiongraphUserInterface
 from spacestream.SpaceStreamApp import SpaceStreamApp
 from spacestream.SpaceStreamConfig import SpaceStreamConfig
 from spacestream.WatchDog import HealthStatus, WatchDog
-from spacestream.codec.LinearCodec import LinearCodec
-from spacestream.ui.PipelineView import PipelineView
 
 
 class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
@@ -35,41 +32,6 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
         self.colorizer.set_option(rs.option.color_scheme, 9.0)
         self.colorizer.set_option(rs.option.min_distance, self.config.min_distance.value)
         self.colorizer.set_option(rs.option.max_distance, self.config.max_distance.value)
-
-        # info panel
-        self.settings_panel.add_child(gui.Label("View Parameter"))
-
-        self.display_depth_map = gui.Checkbox("Display Depth Map")
-        self.display_depth_map.checked = False
-        self.settings_panel.add_child(self.display_depth_map)
-
-        if self.config.enable_3d_view.value:
-            self.display_16_bit = gui.Checkbox("Display 16bit")
-            self.display_16_bit.checked = True
-            self.settings_panel.add_child(self.display_16_bit)
-
-            self.render_3d_view = gui.Checkbox("Render 3D")
-            self.render_3d_view.checked = True
-            self.settings_panel.add_child(self.render_3d_view)
-
-            self.settings_panel.add_child(gui.Label("PCL Stride"))
-            self.pcl_stride = gui.Slider(gui.Slider.INT)
-            self.pcl_stride.set_limits(1, 10)
-            self.pcl_stride.int_value = 4
-            self.settings_panel.add_child(self.pcl_stride)
-
-            self.settings_panel.add_child(gui.Label("Point Size"))
-            self.point_size = gui.Slider(gui.Slider.INT)
-            self.point_size.set_limits(1, 10)
-            self.point_size.int_value = 2
-            self.settings_panel.add_child(self.point_size)
-
-            def on_point_size_changed(size):
-                if self.pipeline_view is None:
-                    return
-                self.pipeline_view.pcd_material.point_size = int(size * self.window.scaling)
-
-            self.point_size.set_on_value_changed(on_point_size_changed)
 
         if isinstance(self.graph.input, vg.RealSenseInput) and self.graph.input.input_bag_file is not None:
             self.settings_panel.add_child(gui.Label("RealSense"))
@@ -106,14 +68,6 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
         self.config.disable_preview.fire_latest()
 
         signal.signal(signal.SIGINT, self._signal_handler)
-
-        # pipeline
-        self.pipeline_view: Optional[PipelineView] = None
-
-        if self.config.enable_3d_view.value:
-            self.pipeline_view = PipelineView(60, 640 * 480, self.window, on_window_close=self._on_close)
-            self.pipeline_view.window = self.window
-            self.window.add_child(self.pipeline_view.pcdview)
 
         self.restart_pipeline_button = gui.Button("Restart Pipeline")
         self.restart_pipeline_button.set_on_clicked(self._on_restart_clicked)
@@ -227,7 +181,7 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
         bgrd = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         preview_image = bgrd
 
-        if self.display_depth_map.checked:
+        if self.config.display_depth_map.value:
             if isinstance(self.graph.input, vg.DepthBuffer):
                 if isinstance(self.graph.input, vg.RealSenseInput):
                     self.colorizer.set_option(rs.option.min_distance, self.config.min_distance.value)
@@ -244,13 +198,6 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
 
         image = o3d.geometry.Image(preview_image)
 
-        h, tw = bgrd.shape[:2]
-        w = tw // 2
-
-        if self.pipeline_view is not None and self.render_3d_view.checked:
-            self.pipeline_view.max_pcd_vertices = h * w
-            self.create_3d_cloud(bgrd)
-
         def update():
             # send stream
             self.graph.fbs_client.send(bgrd)
@@ -259,61 +206,6 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
             self.image_view.update_image(image)
 
         gui.Application.instance.post_to_main_thread(self.window, update)
-
-    def create_3d_cloud(self, frame):
-        if not isinstance(self.graph.input, vg.BaseDepthCamera):
-            return
-
-        h, tw = frame.shape[:2]
-        w = tw // 2
-
-        # settings
-        # read necessary data for visualisation
-        extrinsics = o3d.core.Tensor.eye(4, dtype=o3d.core.Dtype.Float32)
-
-        intrinsic_matrix = o3d.core.Tensor(
-            self.graph.input.camera_matrix,
-            dtype=o3d.core.Dtype.Float32)
-        depth_max = self.config.max_distance.value  # m
-        pcd_stride = self.pcl_stride.int_value  # downsample point cloud, may increase frame rate
-        flag_normals = False
-        depth_scale = 1000
-
-        # split image / and visualise
-        color = np.copy(frame[0:h, w:w + w])
-        depth = np.copy(frame[0:h, 0:w])
-
-        # decode
-        min_value = round(self.config.min_distance.value / self.graph.depth_units)
-        max_value = round(self.config.max_distance.value / self.graph.depth_units)
-
-        if isinstance(self.graph.depth_codec, LinearCodec):
-            depth = self.graph.depth_codec.decode(depth, min_value, max_value,
-                                                  decode_8bit=not self.display_16_bit.checked)
-        else:
-            depth = self.graph.depth_codec.decode(depth, min_value, max_value)
-
-        depth = cv2.cvtColor(depth, cv2.COLOR_GRAY2RGB)
-
-        color_frame = o3d.t.geometry.Image(color)
-        depth_frame = o3d.t.geometry.Image(depth)
-
-        rgbd_image = o3d.t.geometry.RGBDImage(color_frame, depth_frame, True)
-        pcd = o3d.t.geometry.PointCloud.create_from_rgbd_image(rgbd_image, intrinsic_matrix, extrinsics,
-                                                               depth_scale, depth_max,
-                                                               pcd_stride, flag_normals)
-
-        frame_elements = {
-            'color': None,
-            'depth': None,
-            'pcd': pcd,
-            'status_message': ""
-        }
-
-        def update():
-            self.pipeline_view.update(frame_elements)
-
-        gui.Application.instance.post_to_main_thread(self.pipeline_view.window, update)
 
     def _disable_preview_changed(self, is_disabled: bool):
         if is_disabled:

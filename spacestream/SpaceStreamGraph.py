@@ -86,7 +86,7 @@ class SpaceStreamGraph(vg.VisionGraph):
         self.show_preview = True
         self.segmentation_network: Optional[vg.InstanceSegmentationEstimator] = None
 
-        if self.config.masking.value:
+        if segnet is not None:
             self.segmentation_network = segnet
             if isinstance(self.segmentation_network, vg.MediaPipePoseEstimator):
                 self.segmentation_network.enable_segmentation = True

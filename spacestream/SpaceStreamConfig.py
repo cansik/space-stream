@@ -17,6 +17,9 @@ class SpaceStreamConfig:
             self.disable_preview = DataField(False) | dui.Boolean("Disable Preview")
             self.record = DataField(False) | dui.Boolean("Record") | Argument(help="Record output into recordings folder.")
 
+        with container.section("View Parameter"):
+            self.display_depth_map = DataField(False) | dui.Boolean("Display Depth Map")
+
         with container.section("Intrinsics"):
             self.serial_number = DataField("-") | dui.Text("Serial", readonly=True, copy_content=True) | Setting(exposed=False)
             self.intrinsics_res = DataField("-") | dui.Text("Resolution", readonly=True, copy_content=True) | Setting(exposed=False)
@@ -37,11 +40,8 @@ class SpaceStreamConfig:
             self.cam_auto_white_balance = DataField(True) | dui.Boolean("Auto White Balance")
             self.cam_white_balance = DataField(6000) | dui.Slider("White Balance", 2500, 12500)
 
-        # with container.section("3D View"):
-        self.enable_3d_view = DataField(False) # | dui.Boolean("Enabled")
-
-        # with container.section("Masking"):
-        self.masking = DataField(False) # | dui.Boolean("Enabled")
+        with container.section("Masking"):
+            self.masking = DataField(False) | dui.Boolean("Enabled")
 
         with container.section("FB Sharing"):
             self.stream_name = DataField("stream") | dui.Text("Stream Name") | Argument(help="Spout / Syphon stream name.")

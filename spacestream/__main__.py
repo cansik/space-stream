@@ -51,7 +51,6 @@ def parse_args(config: SpaceStreamConfig):
     input_group.add_argument("--midas", action="store_true", help="Use midas for depth capture.")
 
     masking_group = parser.add_argument_group("masking")
-    masking_group.add_argument("--mask", action="store_true", help="Apply mask by segmentation algorithm.")
     vg.add_step_choice_argument(masking_group, segmentation_networks, name="--segnet", default="mediapipe",
                                 help="Segmentation Network", add_params=False)
 
@@ -112,7 +111,7 @@ def main():
     show_ui = not args.no_preview
 
     # create app and graph
-    app = SpaceStreamApp(config, args.input(), None, multi_threaded=show_ui)
+    app = SpaceStreamApp(config, args.input(), args.segnet(), multi_threaded=show_ui)
     app.graph.configure(args)
 
     if args.settings is not None:
