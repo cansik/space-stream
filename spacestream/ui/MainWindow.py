@@ -181,6 +181,13 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
         bgrd = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         preview_image = bgrd
 
+        if self.config.display_vertical_stack.value:
+            h, w = preview_image.shape[:2]
+            hw = w // 2
+            depth_roi = preview_image[0:h, 0:hw]
+            color_roi = preview_image[0:h, hw:w]
+            preview_image = np.vstack((color_roi, depth_roi))
+
         if self.config.display_depth_map.value:
             if isinstance(self.graph.input, vg.DepthBuffer):
                 if isinstance(self.graph.input, vg.RealSenseInput):
@@ -192,7 +199,7 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
                     preview_image = self.graph.input.depth_map
 
         if self.config.record.value:
-            preview_image = bgrd.copy()
+            preview_image = preview_image.copy()
             h, w = preview_image.shape[:2]
             cv2.circle(preview_image, (w - 25, 25), 15, (255, 0, 0), -1)
 

@@ -18,6 +18,7 @@ class SpaceStreamConfig:
             self.record = DataField(False) | dui.Boolean("Record") | Argument(help="Record output into recordings folder.")
 
         with container.section("View Parameter"):
+            self.display_vertical_stack = DataField(True) | dui.Boolean("Display Vertical Stack") | Argument(help="Preview images vertically.")
             self.display_depth_map = DataField(False) | dui.Boolean("Display Depth Map")
 
         with container.section("Intrinsics"):
@@ -43,5 +44,5 @@ class SpaceStreamConfig:
         with container.section("Masking"):
             self.masking = DataField(False) | dui.Boolean("Enabled")
 
-        with container.section("FB Sharing"):
+        with container.section("Frame Buffer Sharing"):
             self.stream_name = DataField("stream") | dui.Text("Stream Name") | Argument(help="Spout / Syphon stream name.")
