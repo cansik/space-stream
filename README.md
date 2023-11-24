@@ -31,6 +31,12 @@ To use the Azure Kinect use the `azure` input type:
 space-stream --input azure
 ```
 
+### Build
+
+```bash
+python setup.py distribute
+```
+
 ### Development
 To develop with this project, clone the git repository and install the dependencies from the requirements:
 

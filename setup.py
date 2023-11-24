@@ -1,5 +1,6 @@
 import distutils
 import platform
+import shutil
 import sys
 import zipfile
 from pathlib import Path
@@ -53,6 +54,10 @@ class Distribution(distutils.cmd.Command):
             f"{MODULE_NAME}/__main__.py",
             "--name", NAME,
             "--add-data", f"{o3d_resources_src}{delimiter}{o3d_resources_dest}",
+            "--collect-binaries", "pyk4a",
+            "--collect-binaries", "pyk4a-bundle",
+            "--collect-binaries", "onnxruntime",
+            "--collect-data", "mediapipe",
             "--clean",
             "-y"
         ]
@@ -74,6 +79,10 @@ class Distribution(distutils.cmd.Command):
             arguments.append("universal2")
 
         PyInstaller.__main__.run(arguments)
+
+        # copy config files
+        shutil.copytree("config", f"dist/{NAME}/config")
+        shutil.copy("README.md", f"dist/{NAME}/README.md")
 
         if self.zip:
             print("creating zip file...")
