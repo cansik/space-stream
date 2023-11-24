@@ -117,7 +117,9 @@ def main():
     if args.settings is not None:
         settings_path = Path(args.settings)
         if settings_path.exists():
+            config.is_loading = True
             app.load_config(settings_path)
+            config.is_loading = False
 
     if show_ui:
         with UIContext():

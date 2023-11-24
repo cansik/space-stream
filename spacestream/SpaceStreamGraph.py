@@ -312,6 +312,9 @@ class SpaceStreamGraph(vg.VisionGraph):
         cam_ref = create_name_reference(cam)
 
         def _on_auto_exposure_change(on: bool):
+            if self.config.is_loading:
+                return
+
             try:
                 cam.enable_auto_exposure = on
 
@@ -322,6 +325,9 @@ class SpaceStreamGraph(vg.VisionGraph):
                 pass
 
         def _on_auto_white_balance_change(on: bool):
+            if self.config.is_loading:
+                return
+
             try:
                 cam.enable_auto_white_balance = on
 
@@ -331,6 +337,9 @@ class SpaceStreamGraph(vg.VisionGraph):
                 pass
 
         def _on_exposure_change(value: int):
+            if self.config.is_loading:
+                return
+
             self.config.cam_auto_exposure.value = False
 
             try:
@@ -339,6 +348,9 @@ class SpaceStreamGraph(vg.VisionGraph):
                 logging.warning(f"Could not set exposure ({value}): {ex}")
 
         def _on_white_balance_change(value: int):
+            if self.config.is_loading:
+                return
+
             self.config.cam_auto_white_balance.value = False
 
             try:

@@ -9,6 +9,7 @@ from spacestream.codec.DepthCodecType import DepthCodecType
 
 class SpaceStreamConfig:
     def __init__(self):
+        self.is_loading = False
         container = ContainerHelper(self)
 
         with container.section("Pipeline"):
