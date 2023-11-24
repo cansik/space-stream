@@ -28,6 +28,7 @@ class SpaceStreamConfig:
             self.codec = DataField(DepthCodecType.UniformHue) | dui.Enum("Codec") | Argument(help="Codec how the depth map will be encoded.")
             self.min_distance = DataField(0.0) | dui.Number("Min Distance") | Argument(help="Min distance to perceive by the camera.")
             self.max_distance = DataField(6.0) | dui.Number("Max Distance") | Argument(help="Max distance to perceive by the camera.")
+            self.depth_rectification = DataField(False) | dui.Boolean("Depth Rectification", tooltip="Undistort depth image") | Argument(help="Undistort depth image")
 
         with container.section("Camera"):
             self.cam_auto_exposure = DataField(True) | dui.Boolean("Auto Exposure")

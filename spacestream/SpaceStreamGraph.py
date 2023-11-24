@@ -19,6 +19,7 @@ from spacestream.codec.RealSenseColorizer import RealSenseColorizer
 from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 from spacestream.io.EnhancedJSONEncoder import EnhancedJSONEncoder
 from spacestream.io.StreamInformation import StreamInformation, StreamSize, Vector2, RangeValue
+from spacestream.nodes.ImageRectificationNode import ImageRectificationNode
 
 
 def linear_interpolate(x):
@@ -47,6 +48,11 @@ class SpaceStreamGraph(vg.VisionGraph):
         self.input = input_node
         self.fps_tracer = vg.FPSTracer()
         self.fbs_client = FrameBufferSharingServer.create(config.stream_name.value)
+
+        self.rectifier: Optional[ImageRectificationNode] = None
+        if isinstance(self.input, vg.BaseCamera):
+            self.rectifier = ImageRectificationNode(self.input)
+            self.add_nodes(self.rectifier)
 
         def on_stream_name_changed(new_stream_name: str):
             logging.info("changing stream name...")
@@ -238,11 +244,16 @@ class SpaceStreamGraph(vg.VisionGraph):
             min_value = round(self.config.min_distance.value / self.depth_units)
             max_value = round(self.config.max_distance.value / self.depth_units)
 
-            self.encoding_watch.start()
             if isinstance(self.input, vg.RealSenseInput) and isinstance(self.depth_codec, RealSenseColorizer):
-                depth_map = self.depth_codec.encode(self.input.depth_frame, min_value, max_value)
-            else:
-                depth_map = self.depth_codec.encode(depth, min_value, max_value)
+                depth = self.input.depth_frame
+
+            # rectify image if necessary
+            if self.config.depth_rectification.value and self.rectifier is not None:
+                depth = self.rectifier.process(depth)
+                frame = self.rectifier.process(frame)
+
+            self.encoding_watch.start()
+            depth_map = self.depth_codec.encode(depth, min_value, max_value)
             self.encoding_watch.stop()
 
             # fix realsense image if it has been aligned to remove lines

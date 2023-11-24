@@ -107,7 +107,7 @@ def main():
             args.rs_filter = [rs.spatial_filter, rs.temporal_filter]
 
     if issubclass(args.input, vg.AzureKinectInput):
-        args.k4a_align = True
+        args.k4a_align_to_color = True
 
     show_ui = not args.no_preview
 
