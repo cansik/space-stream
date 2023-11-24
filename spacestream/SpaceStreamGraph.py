@@ -59,7 +59,10 @@ class SpaceStreamGraph(vg.VisionGraph):
                 return
 
             logging.info("changing stream name...")
-            self.fbs_client.release()
+            try:
+                self.fbs_client.release()
+            except Exception as ex:
+                logging.warning(f"Could not release fbs client: {ex}")
             self.fbs_client = FrameBufferSharingServer.create(new_stream_name)
             self.fbs_client.setup()
             logging.info(f"stream name changed to {new_stream_name}")
