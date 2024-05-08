@@ -11,12 +11,12 @@ import numpy as np
 import pyrealsense2 as rs
 import visiongraph as vg
 from duit.utils.name_reference import create_name_reference
+from visiongraph import FrameBufferSharingServer
 
 from spacestream.SpaceStreamConfig import SpaceStreamConfig
 from spacestream.codec.DepthCodec import DepthCodec
 from spacestream.codec.InverseHueColorization import InverseHueColorization
 from spacestream.codec.RealSenseColorizer import RealSenseColorizer
-from spacestream.fbs.FrameBufferSharingServer import FrameBufferSharingServer
 from spacestream.io.EnhancedJSONEncoder import EnhancedJSONEncoder
 from spacestream.io.StreamInformation import StreamInformation, StreamSize, Vector2, RangeValue
 from spacestream.nodes.ImageRectificationNode import ImageRectificationNode
