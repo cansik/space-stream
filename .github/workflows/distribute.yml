@@ -24,9 +24,13 @@ jobs:
             host: macos-14
             args:
 
-#          - name: ubuntu
-#            host: ubuntu-latest
-#            args:
+          - name: macos
+            host: macos-12
+            args:
+
+    #          - name: ubuntu
+    #            host: ubuntu-latest
+    #            args:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
