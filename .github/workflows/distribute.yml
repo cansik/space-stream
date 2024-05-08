@@ -21,18 +21,18 @@ jobs:
             args:
 
           - name: macos
-            host: macos-12
+            host: macos-14
             args:
 
-          - name: ubuntu
-            host: ubuntu-latest
-            args:
+#          - name: ubuntu
+#            host: ubuntu-latest
+#            args:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: Get Library Version
         id: get_version
