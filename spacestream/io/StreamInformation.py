@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -21,13 +21,13 @@ class RangeValue:
 
 @dataclass
 class Intrinsics:
-    principle: Vector2 = Vector2()
-    focal: Vector2 = Vector2()
+    principle: Vector2 = field(default_factory=Vector2)
+    focal: Vector2 = field(default_factory=Vector2)
 
 
 @dataclass
 class StreamInformation:
     serial: str = ""
-    resolution: StreamSize = StreamSize()
-    intrinsics: Intrinsics = Intrinsics()
-    distance: RangeValue = RangeValue()
+    resolution: StreamSize = field(default_factory=StreamSize)
+    intrinsics: Intrinsics = field(default_factory=Intrinsics)
+    distance: RangeValue = field(default_factory=RangeValue)
