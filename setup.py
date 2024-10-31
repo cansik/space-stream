@@ -99,18 +99,18 @@ class Distribution(distutils.cmd.Command):
 
 setup(
     name=NAME,
-    version='0.2.1',
+    version="0.3.0",
     packages=required_packages,
     entry_points={
-        'console_scripts': [
-            'space-stream = spacestream.__main__:main',
+        "console_scripts": [
+            "space-stream = spacestream.__main__:main",
         ],
     },
-    url='https://github.com/cansik/space-stream',
-    license='MIT License',
-    author='Florian Bruggisser',
-    author_email='github@broox.ch',
-    description='Send RGB-D images over spout / syphon with visiongraph.',
+    url="https://github.com/cansik/space-stream",
+    license="MIT License",
+    author="Florian Bruggisser",
+    author_email="github@broox.ch",
+    description="Send RGB-D images over spout / syphon / NDI with visiongraph.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=required,

@@ -46,4 +46,4 @@ class SpaceStreamConfig:
             self.masking = DataField(False) | dui.Boolean("Enabled")
 
         with container.section("Frame Buffer Sharing"):
-            self.stream_name = DataField("stream") | dui.Text("Stream Name") | Argument(help="Spout / Syphon stream name.")
+            self.stream_name = DataField("stream") | dui.Text("Stream Name") | Argument(help="Spout / Syphon / NDI stream name.")

@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 
 from duit.arguments.Arguments import DefaultArguments
+from sympy.physics.units import action
+from visiongraph_ndi.NDIVideoOutput import NDIVideoOutput
 from visiongui.ui.UIContext import UIContext
 
 from spacestream.SpaceStreamApp import SpaceStreamApp
@@ -66,6 +68,9 @@ def parse_args(config: SpaceStreamConfig):
     debug_group.add_argument("--view-pcd", action="store_true", help="Display PCB preview (deprecated, use --view-3d).")
     debug_group.add_argument("--view-3d", action="store_true", help="Display PCB preview.")
 
+    output_group = parser.add_argument_group("output")
+    output_group.add_argument("--ndi", action="store_true", help="Use NDI for frame buffer sharing.")
+
     args = parser.parse_args()
 
     if args.view_pcd:
@@ -110,8 +115,10 @@ def main():
 
     show_ui = not args.no_preview
 
+    fbs_server_type = NDIVideoOutput if args.ndi else vg.FrameBufferSharingServer
+
     # create app and graph
-    app = SpaceStreamApp(config, args.input(), args.segnet(), multi_threaded=show_ui)
+    app = SpaceStreamApp(config, args.input(), args.segnet(), fbs_server_type, multi_threaded=show_ui)
     app.graph.configure(args)
 
     if args.settings is not None:

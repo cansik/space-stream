@@ -9,8 +9,10 @@ from typing import Callable, Optional, List
 import cv2
 import numpy as np
 import pyrealsense2 as rs
-from visiongraph import vg
+from cyndilib import FourCC
 from duit.utils.name_reference import create_name_reference
+from visiongraph import vg
+from visiongraph_ndi.NDIVideoOutput import NDIVideoOutput
 
 from spacestream.SpaceStreamConfig import SpaceStreamConfig
 from spacestream.codec.DepthCodec import DepthCodec
@@ -35,6 +37,7 @@ class SpaceStreamGraph(vg.VisionGraph):
     def __init__(self, config: SpaceStreamConfig,
                  input_node: vg.BaseInput,
                  segnet: Optional[vg.InstanceSegmentationEstimator] = None,
+                 fbs_server_type: vg.FrameBufferSharingServer = vg.FrameBufferSharingServer,
                  multi_threaded: bool = False, daemon: bool = True, handle_signals: bool = True):
         super().__init__(input_node,
                          name=f"SpaceStream",
@@ -46,7 +49,10 @@ class SpaceStreamGraph(vg.VisionGraph):
 
         self.input = input_node
         self.fps_tracer = vg.FPSTracer()
-        self.fbs_client = vg.FrameBufferSharingServer.create(config.stream_name.value)
+
+        self.fbs_server_type = fbs_server_type
+        self.fbs_client: Optional[vg.FrameBufferSharingServer] = None
+        self._create_fbs_client(config.stream_name.value)
 
         self.rectifier: Optional[ImageRectificationNode] = None
         if isinstance(self.input, vg.BaseCamera):
@@ -62,7 +68,7 @@ class SpaceStreamGraph(vg.VisionGraph):
                 self.fbs_client.release()
             except Exception as ex:
                 logging.warning(f"Could not release fbs client: {ex}")
-            self.fbs_client = vg.FrameBufferSharingServer.create(new_stream_name)
+            self._create_fbs_client(new_stream_name)
             self.fbs_client.setup()
             logging.info(f"stream name changed to {new_stream_name}")
 
@@ -284,9 +290,12 @@ class SpaceStreamGraph(vg.VisionGraph):
             self._intrinsic_update_requested = not success
 
         if threading.current_thread() is threading.main_thread():
-            # send rgb-d over spout
-            bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
-            self.fbs_client.send(bgrd)
+            # send rgb-d over spout / syphon or ndi
+            if isinstance(self.fbs_client, NDIVideoOutput):
+                self.fbs_client.send(rgbd)
+            else:
+                bgrd = cv2.cvtColor(rgbd, cv2.COLOR_RGB2BGR)
+                self.fbs_client.send(bgrd)
 
         if self.config.record.value and self.recorder is not None:
             self.recorder.add_image(rgbd)
@@ -375,6 +384,11 @@ class SpaceStreamGraph(vg.VisionGraph):
         self.config.cam_iso.fire()
         self.config.cam_auto_exposure.fire()
         self.config.cam_auto_white_balance.fire()
+
+    def _create_fbs_client(self, name: str):
+        self.fbs_client = self.fbs_server_type.create(name)
+        if isinstance(self.fbs_server_type, NDIVideoOutput):
+            self.fbs_server_type.fourcc = FourCC.BGRA
 
     @staticmethod
     def mask_image(image: np.ndarray, mask: np.ndarray) -> np.ndarray:

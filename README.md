@@ -1,5 +1,5 @@
 # Space Stream [![PyPI](https://img.shields.io/pypi/v/space-stream)](https://pypi.org/project/space-stream/)
-Send RGB-D images over spout / syphon with visiongraph.
+Send RGB-D images over spout / syphon / NDI with visiongraph.
 
 ![Example Map](images/space-stream-ui.jpg)
 *Source: Intel® RealSense™ [Sample Data](https://github.com/IntelRealSense/librealsense/blob/master/doc/sample-data.md)*
@@ -29,6 +29,12 @@ To use the Azure Kinect use the `azure` input type:
 
 ```
 space-stream --input azure
+```
+
+By default, either Syphon (MacOS) or Spout (Windows) is used to send the image to other applications. Since 0.3.0 it is possible to send the image over NDI by using the `--ndi` argument:
+
+```
+space-stream --input azure --ndi
 ```
 
 ### Build
@@ -109,6 +115,7 @@ usage: space-stream [-h] [-c CONFIG] [-s SETTINGS]
                     [--parallel] [--num-threads NUM_THREADS] [--no-fastmath]
                     [--no-filter] [--no-preview] [--record-crf RECORD_CRF]
                     [--view-pcd] [--view-3d]
+                    [--ndi]
 
 RGB-D framebuffer sharing demo for visiongraph.
 
@@ -230,6 +237,9 @@ debug:
                         Recording compression rate.
   --view-pcd            Display PCB preview (deprecated, use --view-3d).
   --view-3d             Display PCB preview.
+  
+output:
+  --ndi                 Use NDI for frame buffer sharing.
 
 Args that start with '--' can also be set in a config file (specified via -c).
 Config file syntax allows: key=value, flag=true, stuff=[a,b,c] (for details,

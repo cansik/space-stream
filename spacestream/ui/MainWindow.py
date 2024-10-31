@@ -7,8 +7,9 @@ import cv2
 import numpy as np
 import open3d as o3d
 import pyrealsense2 as rs
-from visiongraph import vg
 from open3d.visualization import gui
+from visiongraph import vg
+from visiongraph_ndi.NDIVideoOutput import NDIVideoOutput
 from visiongui.ui.VisiongraphUserInterface import VisiongraphUserInterface
 
 from spacestream.SpaceStreamApp import SpaceStreamApp
@@ -207,7 +208,10 @@ class MainWindow(VisiongraphUserInterface[SpaceStreamApp, SpaceStreamConfig]):
 
         def update():
             # send stream
-            self.graph.fbs_client.send(bgrd)
+            if isinstance(self.graph.fbs_client, NDIVideoOutput):
+                self.graph.fbs_client.send(frame)
+            else:
+                self.graph.fbs_client.send(bgrd)
 
             # update image
             self.image_view.update_image(image)
