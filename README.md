@@ -31,10 +31,33 @@ To use the Azure Kinect use the `azure` input type:
 space-stream --input azure
 ```
 
+#### NDI
 By default, either Syphon (MacOS) or Spout (Windows) is used to send the image to other applications. Since 0.3.0 it is possible to send the image over NDI by using the `--ndi` argument:
 
 ```
 space-stream --input azure --ndi
+```
+
+### OSC
+To control the settings over OSC, start the application with the `--osc` argument. Please, listen for changes on port 7400 and to send changes, use port 7401 (by default).
+
+```
+space-stream --input azure --osc
+```
+
+```
+/space-stream/record (Bidirectional): bool
+/space-stream/codec (Bidirectional): DepthCodecType
+/space-stream/min_distance (Bidirectional): float
+/space-stream/max_distance (Bidirectional): float
+/space-stream/depth_rectification (Bidirectional): bool
+/space-stream/cam_auto_exposure (Bidirectional): bool
+/space-stream/cam_exposure (Bidirectional): int
+/space-stream/cam_iso (Bidirectional): int
+/space-stream/cam_auto_white_balance (Bidirectional): bool
+/space-stream/cam_white_balance (Bidirectional): int
+/space-stream/masking (Bidirectional): bool
+/space-stream/stream_name (Bidirectional): str
 ```
 
 ### Build
@@ -114,7 +137,8 @@ usage: space-stream [-h] [-c CONFIG] [-s SETTINGS]
                     [--segnet mediapipe,mediapipe-light,mediapipe-heavy]
                     [--parallel] [--num-threads NUM_THREADS] [--no-fastmath]
                     [--no-filter] [--no-preview] [--record-crf RECORD_CRF]
-                    [--view-pcd] [--view-3d]
+                    [--view-pcd] [--view-3d] [--osc] [--osc-host OSC_HOST]
+                    [--osc-in-port OSC_IN_PORT] [--osc-out-port OSC_OUT_PORT]
                     [--ndi]
 
 RGB-D framebuffer sharing demo for visiongraph.
@@ -238,6 +262,14 @@ debug:
   --view-pcd            Display PCB preview (deprecated, use --view-3d).
   --view-3d             Display PCB preview.
   
+osc:
+  --osc                 Enable OSC support for settings.
+  --osc-host OSC_HOST   OSC host address (default: 0.0.0.0)
+  --osc-in-port OSC_IN_PORT
+                        OSC receiving port address (default: 7401)
+  --osc-out-port OSC_OUT_PORT
+                        OSC receiving port address (default: 7400)
+
 output:
   --ndi                 Use NDI for frame buffer sharing.
 
