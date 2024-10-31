@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import open3d as o3d
 import pyrealsense2 as rs
-import visiongraph as vg
+from visiongraph import vg
 from open3d.visualization import gui
 from visiongui.ui.VisiongraphUserInterface import VisiongraphUserInterface
 

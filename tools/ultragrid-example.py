@@ -5,7 +5,7 @@ from typing import Optional
 
 import cv2
 import numpy as np
-import visiongraph as vg
+from visiongraph import vg
 
 uv_pipe: Optional[BufferedWriter] = None
 

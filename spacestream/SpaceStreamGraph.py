@@ -9,9 +9,8 @@ from typing import Callable, Optional, List
 import cv2
 import numpy as np
 import pyrealsense2 as rs
-import visiongraph as vg
+from visiongraph import vg
 from duit.utils.name_reference import create_name_reference
-from visiongraph import FrameBufferSharingServer
 
 from spacestream.SpaceStreamConfig import SpaceStreamConfig
 from spacestream.codec.DepthCodec import DepthCodec
@@ -47,7 +46,7 @@ class SpaceStreamGraph(vg.VisionGraph):
 
         self.input = input_node
         self.fps_tracer = vg.FPSTracer()
-        self.fbs_client = FrameBufferSharingServer.create(config.stream_name.value)
+        self.fbs_client = vg.FrameBufferSharingServer.create(config.stream_name.value)
 
         self.rectifier: Optional[ImageRectificationNode] = None
         if isinstance(self.input, vg.BaseCamera):
@@ -63,7 +62,7 @@ class SpaceStreamGraph(vg.VisionGraph):
                 self.fbs_client.release()
             except Exception as ex:
                 logging.warning(f"Could not release fbs client: {ex}")
-            self.fbs_client = FrameBufferSharingServer.create(new_stream_name)
+            self.fbs_client = vg.FrameBufferSharingServer.create(new_stream_name)
             self.fbs_client.setup()
             logging.info(f"stream name changed to {new_stream_name}")
 

@@ -3,7 +3,7 @@ from typing import Optional
 
 import cv2
 import numpy as np
-import visiongraph as vg
+from visiongraph import vg
 
 
 class ImageRectificationNode(vg.GraphNode[np.ndarray, np.ndarray]):

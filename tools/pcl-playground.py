@@ -1,6 +1,6 @@
 import cv2
 import open3d
-import visiongraph as vg
+from visiongraph import vg
 import numpy as np
 from typing import Tuple
 

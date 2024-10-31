@@ -5,7 +5,7 @@ from visiongui.app.VisiongraphApp import VisiongraphApp
 from spacestream.SpaceStreamConfig import SpaceStreamConfig
 from spacestream.SpaceStreamGraph import SpaceStreamGraph
 
-import visiongraph as vg
+from visiongraph import vg
 
 
 class SpaceStreamApp(VisiongraphApp[SpaceStreamGraph, SpaceStreamConfig]):

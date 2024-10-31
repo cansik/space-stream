@@ -21,7 +21,7 @@ from visiongraph.input import add_input_step_choices
 
 from spacestream import codec
 
-import visiongraph as vg
+from visiongraph import vg
 import pyrealsense2 as rs
 
 segmentation_networks = {

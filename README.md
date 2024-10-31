@@ -5,7 +5,7 @@ Send RGB-D images over spout / syphon with visiongraph.
 *Source: Intel® RealSense™ [Sample Data](https://github.com/IntelRealSense/librealsense/blob/master/doc/sample-data.md)*
 
 ### Installation
-It is recommended to use `Python 11` (`Python 3.8`, `Python 3.9` or `Python 3.10` should work too) and should run on any OS. First create a new [virtualenv](https://docs.python.org/3/library/venv.html) and activate it. 
+It is recommended to use `Python 3.11` (`3.8`, `3.9` or `3.10` should work too) and should run on any OS. First create a new [virtualenv](https://docs.python.org/3/library/venv.html) and activate it. 
 After that install all dependencies:
 
 ```bash
