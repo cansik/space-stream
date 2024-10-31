@@ -1,10 +1,11 @@
 # fix conda load dll problem
 import faulthandler
 import os
+import threading
 from pathlib import Path
 
 from duit.arguments.Arguments import DefaultArguments
-from sympy.physics.units import action
+from duit_osc.OscService import OscService
 from visiongraph_ndi.NDIVideoOutput import NDIVideoOutput
 from visiongui.ui.UIContext import UIContext
 
@@ -68,6 +69,12 @@ def parse_args(config: SpaceStreamConfig):
     debug_group.add_argument("--view-pcd", action="store_true", help="Display PCB preview (deprecated, use --view-3d).")
     debug_group.add_argument("--view-3d", action="store_true", help="Display PCB preview.")
 
+    osc_group = parser.add_argument_group("osc")
+    osc_group.add_argument("--osc", action="store_true", help="Enable OSC support for settings.")
+    osc_group.add_argument("--osc-host", type=str, default="0.0.0.0", help="OSC host address (default: 0.0.0.0)")
+    osc_group.add_argument("--osc-in-port", type=int, default=7401, help="OSC receiving port address (default: 7401)")
+    osc_group.add_argument("--osc-out-port", type=int, default=7400, help="OSC receiving port address (default: 7400)")
+
     output_group = parser.add_argument_group("output")
     output_group.add_argument("--ndi", action="store_true", help="Use NDI for frame buffer sharing.")
 
@@ -113,8 +120,25 @@ def main():
     if issubclass(args.input, vg.AzureKinectInput):
         args.k4a_align_to_color = True
 
-    show_ui = not args.no_preview
+    if args.osc:
+        osc_service = OscService(host=args.osc_host, in_port=args.osc_in_port, out_port=args.osc_out_port)
+        osc_service.add_route("/space-stream", config)
 
+        # print the api description of the service (experimental)
+        print("\nOSC API")
+        print(f"{osc_service.api_description()}\n")
+
+        # run the service
+        def osc_thread():
+            osc_service.run()
+
+        threading.Thread(target=osc_thread, daemon=True).start()
+
+        print("OSC Server started!")
+        print(f"    Please, listen for changes on port {osc_service.out_port}")
+        print(f"    Please, send new values on port {osc_service.in_port}")
+
+    show_ui = not args.no_preview
     fbs_server_type = NDIVideoOutput if args.ndi else vg.FrameBufferSharingServer
 
     # create app and graph
@@ -136,6 +160,9 @@ def main():
                 window.menu.settings_file = Path(args.settings)
     else:
         app.graph.open()
+
+    if args.osc:
+        osc_service.stop()
 
 
 if __name__ == "__main__":

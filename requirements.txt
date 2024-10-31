@@ -4,9 +4,10 @@ pyopengl
 
 # visiongraph
 visiongraph[realsense, azure, mediapipe, numba, onnx-gpu, media, fbs]~=1.0.0b2
-visiongraph-ndi~=0.1.0
+visiongraph-ndi~=0.1.1
 numpy<2
 
 # gui related
 visiongraph-ui~=0.3.0
 duit[open3d]~=0.1.13
+duit-osc~=0.2.0
