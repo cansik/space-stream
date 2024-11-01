@@ -1,7 +1,6 @@
 # fix conda load dll problem
 import faulthandler
 import os
-import threading
 from pathlib import Path
 
 from duit.arguments.Arguments import DefaultArguments
@@ -129,10 +128,7 @@ def main():
         print(f"{osc_service.api_description()}\n")
 
         # run the service
-        def osc_thread():
-            osc_service.run()
-
-        threading.Thread(target=osc_thread, daemon=True).start()
+        osc_service.run_async()
 
         print("OSC Server started!")
         print(f"    Please, listen for changes on port {osc_service.out_port}")

@@ -9,5 +9,5 @@ numpy<2
 
 # gui related
 visiongraph-ui~=0.3.0
-duit[open3d]~=0.1.13
-duit-osc~=0.2.0
+duit[open3d]~=0.1.14.0
+duit-osc~=0.3.0
