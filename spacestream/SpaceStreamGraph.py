@@ -218,8 +218,9 @@ class SpaceStreamGraph(vg.VisionGraph):
             self.recorder.close()
             self.recorder = None
 
+        segmentations: Optional[List[vg.InstanceSegmentationResult]] = None
         if self.config.masking.value:
-            segmentations: List[vg.InstanceSegmentationResult] = self.segmentation_network.process(frame)
+            segmentations = self.segmentation_network.process(frame)
             for segment in segmentations:
                 frame = self.mask_image(frame, segment.mask)
 
@@ -277,8 +278,9 @@ class SpaceStreamGraph(vg.VisionGraph):
                 depth_map = cv2.resize(depth_map, (w, h), interpolation=cv2.INTER_AREA)
 
             if self.config.masking.value:
-                for segment in segmentations:
-                    depth_map = self.mask_image(depth_map, segment.mask)
+                if segmentations is not None:
+                    for segment in segmentations:
+                        depth_map = self.mask_image(depth_map, segment.mask)
 
             rgbd = np.hstack((depth_map, frame))
         else:
