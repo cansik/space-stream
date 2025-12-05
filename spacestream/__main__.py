@@ -27,9 +27,9 @@ from visiongraph import vg
 import pyrealsense2 as rs
 
 segmentation_networks = {
-    "mediapipe": partial(vg.MediaPipePoseEstimator.create, vg.PoseModelComplexity.Normal),
-    "mediapipe-light": partial(vg.MediaPipePoseEstimator.create, vg.PoseModelComplexity.Light),
-    "mediapipe-heavy": partial(vg.MediaPipePoseEstimator.create, vg.PoseModelComplexity.Heavy),
+    "mediapipe": partial(vg.MediaPipePoseEstimator.create, vg.MediaPipePoseConfig.Full),
+    "mediapipe-light": partial(vg.MediaPipePoseEstimator.create, vg.MediaPipePoseConfig.Light),
+    "mediapipe-heavy": partial(vg.MediaPipePoseEstimator.create, vg.MediaPipePoseConfig.Heavy),
 
     # "maskrcnn": partial(vg.MaskRCNNEstimator.create, vg.MaskRCNNConfig.EfficientNet_608_FP32),
     # "maskrcnn-eff-480": partial(vg.MaskRCNNEstimator.create, vg.MaskRCNNConfig.EfficientNet_480_FP16),

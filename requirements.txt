@@ -3,11 +3,10 @@ configargparse
 pyopengl
 
 # visiongraph
-visiongraph[realsense, azure, mediapipe, numba, onnx-gpu, media, fbs]~=1.0.0b2
-visiongraph-ndi~=0.1.1
-numpy<2
+visiongraph[realsense, azure, mediapipe, numba, onnx-gpu, media, fbs]~=1.1.0.1
+visiongraph-ndi~=0.2.0
 
 # gui related
 visiongraph-ui~=0.3.0
-duit[open3d]~=0.1.14.0
+duit[open3d]~=0.1.20
 duit-osc~=0.3.0
