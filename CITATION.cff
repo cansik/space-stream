@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Bruggisser"
+    given-names: "Florian"
+    orcid: "https://orcid.org/0009-0003-0645-6746"
+    affiliation: "Zurich University of the Arts"
+title: "space-stream"
+type: software
+version: "0.4.0"
+doi: "10.5281/zenodo.17827884"
+date-released: "2025-12-05"
+url: "https://github.com/cansik/space-stream"
+repository-code: "https://github.com/cansik/space-stream"
+keywords:
+  - python
+  - computer vision
+  - depth image
+  - pointcloud streaming

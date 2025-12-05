@@ -1,4 +1,4 @@
-# Space Stream [![PyPI](https://img.shields.io/pypi/v/space-stream)](https://pypi.org/project/space-stream/)
+# Space Stream [![PyPI](https://img.shields.io/pypi/v/space-stream)](https://pypi.org/project/space-stream/) [![DOI](https://zenodo.org/badge/443109029.svg)](https://doi.org/10.5281/zenodo.17827883)
 Send RGB-D images over spout / syphon / NDI with visiongraph.
 
 ![Example Map](images/space-stream-ui.jpg)
@@ -280,4 +280,4 @@ config file values which override defaults.
 ```
 
 ### About
-Copyright (c) 2024 Florian Bruggisser
+Copyright (c) 2025 Florian Bruggisser
